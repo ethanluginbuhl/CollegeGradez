@@ -5,7 +5,7 @@ const homeEmpty = document.getElementById("home-empty");
 const courseNameInput = document.getElementById("course-name");
 const gradeSummary = document.getElementById("grade-summary");
 const categoryRows = document.getElementById("category-rows");
-const assignmentRows = document.getElementById("assignment-rows");
+const assignmentGroups = document.getElementById("assignment-groups");
 const categoriesEmpty = document.getElementById("categories-empty");
 const assignmentsEmpty = document.getElementById("assignments-empty");
 const dialogEl = document.getElementById("dialog");
@@ -37,6 +37,13 @@ function formatPercent(value) {
     return "—";
   }
   return `${value.toFixed(1)}%`;
+}
+
+function formatPoints(value) {
+  if (value === null || value === undefined || Number.isNaN(value)) {
+    return "—";
+  }
+  return String(Number(value.toFixed(2)));
 }
 
 function currentCourse() {
@@ -129,6 +136,30 @@ function showCourse(courseId) {
   renderCourse();
 }
 
+function renderGradeSummary(course) {
+  const grade = Calc.courseGrade(course);
+  const overallLabel =
+    course.gradingMode === "points"
+      ? `${formatPercent(grade.percent)}  (${formatPoints(grade.earned)}/${formatPoints(grade.possible)})`
+      : formatPercent(grade.percent);
+
+  const categoryLines = grade.byCategory
+    .map((cat) => {
+      const extra =
+        course.gradingMode === "weighted" && cat.weight != null
+          ? ` · weight ${Number(cat.weight) || 0}%`
+          : "";
+      const dropped = Number(cat.dropLowest) > 0 ? ` · drop ${cat.dropLowest}` : "";
+      return `<li><span>${escapeHtml(cat.name || "Untitled")}${extra}${dropped}</span><span>${formatPercent(cat.percent)}</span></li>`;
+    })
+    .join("");
+
+  gradeSummary.innerHTML = `
+    <p class="overall">Current grade: ${overallLabel}</p>
+    <ul>${categoryLines || "<li><span>No categories yet</span><span></span></li>"}</ul>
+  `;
+}
+
 function renderHome() {
   courseList.innerHTML = "";
   homeEmpty.classList.toggle("hidden", data.courses.length > 0);
@@ -185,27 +216,7 @@ function renderCourse() {
     `input[name="grading-mode"][value="${course.gradingMode}"]`
   ).checked = true;
 
-  const grade = Calc.courseGrade(course);
-  const overallLabel =
-    course.gradingMode === "points"
-      ? `${formatPercent(grade.percent)}  (${grade.earned}/${grade.possible})`
-      : formatPercent(grade.percent);
-
-  const categoryLines = grade.byCategory
-    .map((cat) => {
-      const extra =
-        course.gradingMode === "weighted" && cat.weight != null
-          ? ` · weight ${Number(cat.weight) || 0}%`
-          : "";
-      const dropped = Number(cat.dropLowest) > 0 ? ` · drop ${cat.dropLowest}` : "";
-      return `<li><span>${escapeHtml(cat.name || "Untitled")}${extra}${dropped}</span><span>${formatPercent(cat.percent)}</span></li>`;
-    })
-    .join("");
-
-  gradeSummary.innerHTML = `
-    <p class="overall">Current grade: ${overallLabel}</p>
-    <ul>${categoryLines || "<li><span>No categories yet</span><span></span></li>"}</ul>
-  `;
+  renderGradeSummary(course);
 
   categoriesEmpty.classList.toggle("hidden", course.categories.length > 0);
   categoryRows.innerHTML = "";
@@ -226,20 +237,20 @@ function renderCourse() {
     nameInput.addEventListener("change", async () => {
       category.name = nameInput.value.trim() || "Untitled";
       await persist();
-      renderCourse();
+      renderGradeSummary(course);
     });
     weightInput.addEventListener("change", async () => {
       const value = Number(weightInput.value);
       category.weight = Number.isFinite(value) ? value : 0;
       await persist();
-      renderCourse();
+      renderGradeSummary(course);
     });
     dropInput.addEventListener("change", async () => {
       const value = Math.max(0, Math.floor(Number(dropInput.value) || 0));
       category.dropLowest = value;
       dropInput.value = value;
       await persist();
-      renderCourse();
+      renderGradeSummary(course);
     });
     row.querySelector("button").addEventListener("click", async () => {
       const ok = await askConfirm(
@@ -260,63 +271,118 @@ function renderCourse() {
     categoryRows.appendChild(row);
   }
 
-  assignmentsEmpty.classList.toggle("hidden", course.assignments.length > 0);
-  assignmentRows.innerHTML = "";
-  for (const assignment of course.assignments) {
+  assignmentsEmpty.classList.toggle(
+    "hidden",
+    course.categories.length > 0 || course.assignments.length > 0
+  );
+  assignmentGroups.innerHTML = "";
+
+  function renderAssignmentRow(assignment, tableBody) {
     const row = document.createElement("tr");
     row.innerHTML = `
       <td><input type="text" class="asg-name" maxlength="120" /></td>
-      <td><select class="asg-cat"></select></td>
       <td><input type="number" class="asg-earned" min="0" step="0.01" /></td>
       <td><input type="number" class="asg-possible" min="0" step="0.01" /></td>
       <td><button type="button" class="danger icon">Remove</button></td>
     `;
     const nameInput = row.querySelector(".asg-name");
-    const catSelect = row.querySelector(".asg-cat");
     const earnedInput = row.querySelector(".asg-earned");
     const possibleInput = row.querySelector(".asg-possible");
     nameInput.value = assignment.name;
     earnedInput.value = assignment.earned ?? "";
     possibleInput.value = assignment.possible ?? "";
 
-    const noneOption = document.createElement("option");
-    noneOption.value = "";
-    noneOption.textContent = "Unassigned";
-    catSelect.appendChild(noneOption);
-    for (const category of course.categories) {
-      const option = document.createElement("option");
-      option.value = category.id;
-      option.textContent = category.name;
-      catSelect.appendChild(option);
-    }
-    catSelect.value = assignment.categoryId || "";
-
     nameInput.addEventListener("change", async () => {
       assignment.name = nameInput.value.trim() || "Untitled";
       await persist();
-      renderCourse();
-    });
-    catSelect.addEventListener("change", async () => {
-      assignment.categoryId = catSelect.value || null;
-      await persist();
-      renderCourse();
+      renderGradeSummary(course);
     });
     earnedInput.addEventListener("change", async () => {
       assignment.earned = parseOptionalNumber(earnedInput.value);
       await persist();
-      renderCourse();
+      renderGradeSummary(course);
     });
     possibleInput.addEventListener("change", async () => {
       assignment.possible = parseOptionalNumber(possibleInput.value);
       await persist();
-      renderCourse();
+      renderGradeSummary(course);
     });
     row.querySelector("button").addEventListener("click", async () => {
       course.assignments = course.assignments.filter((item) => item.id !== assignment.id);
       await persist();
       renderCourse();
     });
-    assignmentRows.appendChild(row);
+    tableBody.appendChild(row);
+  }
+
+  function renderAssignmentGroup(category, assignments) {
+    const group = document.createElement("section");
+    group.className = "assignment-group";
+    const title = category ? category.name || "Untitled" : "Unassigned";
+    const detail = category
+      ? course.gradingMode === "weighted"
+        ? `${Number(category.weight) || 0}% of course grade`
+        : "Points mode"
+      : "Choose a category by adding assignments from a category block";
+    group.innerHTML = `
+      <div class="assignment-group-header">
+        <div>
+          <h4></h4>
+          <p></p>
+        </div>
+        ${category ? '<button type="button" class="add-group-assignment">Add assignment</button>' : ""}
+      </div>
+    `;
+    group.querySelector("h4").textContent = title;
+    group.querySelector("p").textContent = detail;
+
+    if (assignments.length === 0) {
+      const empty = document.createElement("p");
+      empty.className = "assignment-group-empty";
+      empty.textContent = category
+        ? "No assignments in this category yet."
+        : "These assignments are not currently in a category.";
+      group.appendChild(empty);
+    } else {
+      const table = document.createElement("table");
+      table.className = "data-table";
+      table.innerHTML = `
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Earned</th>
+            <th>Possible</th>
+            <th></th>
+          </tr>
+        </thead>
+      `;
+      const body = document.createElement("tbody");
+      for (const assignment of assignments) {
+        renderAssignmentRow(assignment, body);
+      }
+      table.appendChild(body);
+      group.appendChild(table);
+    }
+
+    const addButton = group.querySelector(".add-group-assignment");
+    if (addButton) {
+      addButton.addEventListener("click", () => addAssignment(category.id));
+    }
+    assignmentGroups.appendChild(group);
+  }
+
+  for (const category of course.categories) {
+    renderAssignmentGroup(
+      category,
+      course.assignments.filter((assignment) => assignment.categoryId === category.id)
+    );
+  }
+
+  const unassigned = course.assignments.filter(
+    (assignment) => !course.categories.some((category) => category.id === assignment.categoryId)
+  );
+  if (unassigned.length > 0) {
+    renderAssignmentGroup(null, unassigned);
   }
 }
 
@@ -399,7 +465,7 @@ document.getElementById("add-category").addEventListener("click", async () => {
   renderCourse();
 });
 
-document.getElementById("add-assignment").addEventListener("click", async () => {
+async function addAssignment(categoryId) {
   const course = currentCourse();
   if (!course) {
     return;
@@ -407,13 +473,13 @@ document.getElementById("add-assignment").addEventListener("click", async () => 
   course.assignments.push({
     id: uid(),
     name: "New assignment",
-    categoryId: course.categories[0] ? course.categories[0].id : null,
+    categoryId: categoryId || null,
     earned: null,
     possible: null,
   });
   await persist();
   renderCourse();
-});
+}
 
 async function init() {
   data = await window.api.load();
