@@ -1,0 +1,17 @@
+{
+  "name": "collegegradez",
+  "version": "1.0.0",
+  "description": "A college grade calculator for students",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "author": "Ethan",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^38.4.0"
+  },
+  "allowScripts": {
+    "electron@38.8.6": true
+  }
+}

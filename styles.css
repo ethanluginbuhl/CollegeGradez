@@ -1,0 +1,301 @@
+:root {
+  --bg: #f4f1ea;
+  --paper: #fffdf8;
+  --ink: #1c2430;
+  --muted: #5c6776;
+  --line: #d9d2c5;
+  --accent: #1f6f5b;
+  --accent-hover: #175746;
+  --danger: #a33b3b;
+  --danger-hover: #822e2e;
+  --shadow: 0 8px 24px rgba(28, 36, 48, 0.08);
+  font-family: "Segoe UI", Tahoma, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+}
+
+#app {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 28px 24px 64px;
+}
+
+.topbar h1 {
+  margin: 0;
+  font-size: 1.85rem;
+  letter-spacing: -0.02em;
+}
+
+.tagline {
+  margin: 6px 0 0;
+  color: var(--muted);
+}
+
+.view-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 28px 0 16px;
+}
+
+.view-header h2,
+.panel h3 {
+  margin: 0;
+}
+
+button {
+  background: var(--accent);
+  color: white;
+  border: 0;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font: inherit;
+  cursor: pointer;
+}
+
+button:hover {
+  background: var(--accent-hover);
+}
+
+button.ghost {
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid var(--line);
+}
+
+button.ghost:hover {
+  background: #e8f3ef;
+}
+
+button.danger {
+  background: transparent;
+  color: var(--danger);
+  border: 1px solid var(--line);
+}
+
+button.danger:hover {
+  background: #f8ecec;
+  color: var(--danger-hover);
+}
+
+button.icon {
+  padding: 4px 8px;
+  font-size: 0.85rem;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.empty {
+  color: var(--muted);
+}
+
+.course-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.course-card {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  padding: 16px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.course-card button.open {
+  flex: 1;
+  text-align: left;
+  background: transparent;
+  color: inherit;
+  padding: 0;
+}
+
+.course-card button.open:hover {
+  background: transparent;
+}
+
+.course-card h3 {
+  margin: 0 0 4px;
+  font-size: 1.15rem;
+}
+
+.course-card .grade {
+  font-size: 1.4rem;
+  font-weight: 650;
+  color: var(--accent);
+}
+
+.course-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.course-meta,
+.panel,
+.summary {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  padding: 18px;
+  margin-bottom: 16px;
+}
+
+.course-meta {
+  display: grid;
+  gap: 16px;
+}
+
+.course-meta label,
+.mode-toggle label {
+  display: grid;
+  gap: 6px;
+  font-size: 0.92rem;
+  color: var(--muted);
+}
+
+.mode-toggle {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.mode-toggle legend {
+  padding: 0;
+  margin-bottom: 8px;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.mode-toggle label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ink);
+}
+
+input[type="text"],
+input[type="number"],
+select {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font: inherit;
+  background: #fff;
+  color: var(--ink);
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.data-table th {
+  text-align: left;
+  font-size: 0.82rem;
+  color: var(--muted);
+  font-weight: 600;
+  padding: 0 8px 8px 0;
+}
+
+.data-table td {
+  padding: 6px 8px 6px 0;
+  vertical-align: middle;
+}
+
+.data-table td:last-child,
+.data-table th:last-child {
+  width: 72px;
+  text-align: right;
+  padding-right: 0;
+}
+
+.summary .overall {
+  font-size: 1.7rem;
+  font-weight: 700;
+  margin: 0 0 12px;
+}
+
+.summary ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 6px;
+}
+
+.summary li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--muted);
+}
+
+.weight-col.hidden-col {
+  display: none;
+}
+
+body.points-mode .weight-col {
+  display: none;
+}
+
+.dialog {
+  position: fixed;
+  inset: 0;
+  background: rgba(28, 36, 48, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  z-index: 20;
+}
+
+.dialog-card {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  padding: 20px;
+  width: min(420px, 100%);
+}
+
+.dialog-card p {
+  margin: 0 0 12px;
+  font-weight: 600;
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 14px;
+}

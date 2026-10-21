@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self'"
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CollegeGradez</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div id="app">
+      <header class="topbar">
+        <h1>CollegeGradez</h1>
+        <p class="tagline">Current course grades, before the semester ends.</p>
+      </header>
+
+      <main id="view-home" class="view">
+        <div class="view-header">
+          <h2>Courses</h2>
+          <button id="add-course" type="button">Add course</button>
+        </div>
+        <p id="home-empty" class="empty hidden">
+          No courses yet. Add one to start tracking grades.
+        </p>
+        <ul id="course-list" class="course-list"></ul>
+      </main>
+
+      <main id="view-course" class="view hidden">
+        <div class="view-header">
+          <button id="back-home" type="button" class="ghost">Back</button>
+          <button id="delete-course" type="button" class="danger">Delete course</button>
+        </div>
+
+        <section class="course-meta">
+          <label>
+            Course name
+            <input id="course-name" type="text" maxlength="120" />
+          </label>
+          <fieldset class="mode-toggle">
+            <legend>Grading system</legend>
+            <label>
+              <input type="radio" name="grading-mode" value="weighted" />
+              Weighted categories
+            </label>
+            <label>
+              <input type="radio" name="grading-mode" value="points" />
+              Points
+            </label>
+          </fieldset>
+        </section>
+
+        <section id="grade-summary" class="summary"></section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <h3>Categories</h3>
+            <button id="add-category" type="button">Add category</button>
+          </div>
+          <p id="categories-empty" class="empty hidden">
+            Add at least one category (for example Homework or Exams).
+          </p>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th class="weight-col">Weight %</th>
+                <th>Drop lowest</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="category-rows"></tbody>
+          </table>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <h3>Assignments</h3>
+            <button id="add-assignment" type="button">Add assignment</button>
+          </div>
+          <p id="assignments-empty" class="empty hidden">
+            Add assignments and scores as you get them back.
+          </p>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Category</th>
+                <th>Earned</th>
+                <th>Possible</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="assignment-rows"></tbody>
+          </table>
+        </section>
+      </main>
+    </div>
+
+    <div id="dialog" class="dialog hidden" role="dialog" aria-modal="true" aria-labelledby="dialog-message">
+      <div class="dialog-card">
+        <p id="dialog-message"></p>
+        <input id="dialog-input" type="text" maxlength="120" />
+        <div class="dialog-actions">
+          <button type="button" id="dialog-cancel" class="ghost">Cancel</button>
+          <button type="button" id="dialog-ok">OK</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="calc.js"></script>
+    <script src="renderer.js"></script>
+  </body>
+</html>
