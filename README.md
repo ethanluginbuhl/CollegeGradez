@@ -11,6 +11,9 @@ A college grade calculator that is hopefully better than a spreadsheet
 ## Issues to Fix
 - None for now!
 
+## Things to Address Before Shipping
+- Icons for all platforms (not just Windows), including the actual build
+
 ## Steps to Get Started with Development
 1. Clone the repository to your desired location
 2. Install node.js on your device
