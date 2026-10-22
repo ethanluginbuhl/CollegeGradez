@@ -1,11 +1,11 @@
 :root {
   --bg: #f4f1ea;
   --paper: #fffdf8;
-  --ink: #1c2430;
+  --ink: #1A252C;
   --muted: #5c6776;
   --line: #d9d2c5;
-  --accent: #1f6f5b;
-  --accent-hover: #175746;
+  --accent: #0066CC;
+  --accent-hover: #0052A3;
   --danger: #a33b3b;
   --danger-hover: #822e2e;
   --shadow: 0 8px 24px rgba(28, 36, 48, 0.08);
