@@ -12,7 +12,7 @@ A college grade calculator that is hopefully better than a spreadsheet
 - None for now!
 
 ## Things to Address Before Shipping
-- Icons for all platforms (not just Windows), including the actual build
+- Integrate code formatting with Prettier and ESLint
 
 ## Steps to Get Started with Development
 1. Clone the repository to your desired location

@@ -6,7 +6,11 @@
   "scripts": {
     "start": "electron ."
   },
-  "author": "Ethan",
+  "author": {
+    "name": "Ethan Luginbuhl",
+    "email": "ethanjluginbuhl@gmail.com",
+    "url": "https://github.com/ethanluginbuhl"
+  },
   "license": "MIT",
   "devDependencies": {
     "electron": "^38.4.0"
