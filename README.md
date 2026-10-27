@@ -26,8 +26,8 @@ The app also creates timestamped backups before each local save and keeps the
 
 ## Things to Address Before Shipping
 
-- Use electron-builder to package app installers
-- Obtain a Windows code-signing certiciate
+- Obtain a Windows code-signing certificate
+- Create and publish installers
 
 ## Steps to Get Started with Development
 
