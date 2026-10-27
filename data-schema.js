@@ -19,8 +19,13 @@ function validateData(data) {
     throw new Error("Data must contain a courses array");
   }
 
+  const courseIds = new Set();
   for (const [courseIndex, course] of data.courses.entries()) {
     assertString(course.id, `Course ${courseIndex} id`);
+    if (courseIds.has(course.id)) {
+      throw new Error(`Course ${courseIndex} has a duplicate id`);
+    }
+    courseIds.add(course.id);
     assertString(course.name, `Course ${courseIndex} name`);
     if (!VALID_MODES.has(course.gradingMode)) {
       throw new Error(`Course ${courseIndex} has an invalid grading mode`);
@@ -32,8 +37,13 @@ function validateData(data) {
       throw new Error(`Course ${courseIndex} has invalid collections`);
     }
 
+    const categoryIds = new Set();
     for (const [categoryIndex, category] of course.categories.entries()) {
       assertString(category.id, `Category ${categoryIndex} id`);
+      if (categoryIds.has(category.id)) {
+        throw new Error(`Category ${categoryIndex} has a duplicate id`);
+      }
+      categoryIds.add(category.id);
       assertString(category.name, `Category ${categoryIndex} name`);
       if (!isFiniteNumber(category.weight) || category.weight < 0) {
         throw new Error(`Category ${categoryIndex} has an invalid weight`);
@@ -43,11 +53,13 @@ function validateData(data) {
       }
     }
 
-    const categoryIds = new Set(
-      course.categories.map((category) => category.id),
-    );
+    const assignmentIds = new Set();
     for (const [assignmentIndex, assignment] of course.assignments.entries()) {
       assertString(assignment.id, `Assignment ${assignmentIndex} id`);
+      if (assignmentIds.has(assignment.id)) {
+        throw new Error(`Assignment ${assignmentIndex} has a duplicate id`);
+      }
+      assignmentIds.add(assignment.id);
       assertString(assignment.name, `Assignment ${assignmentIndex} name`);
       if (
         assignment.categoryId !== null &&
@@ -60,6 +72,7 @@ function validateData(data) {
       if (
         !isNullableNumber(assignment.earned) ||
         !isNullableNumber(assignment.possible) ||
+        (assignment.earned !== null && assignment.earned < 0) ||
         (assignment.possible !== null && assignment.possible < 0)
       ) {
         throw new Error(`Assignment ${assignmentIndex} has invalid points`);

@@ -35,6 +35,17 @@ The app also creates timestamped backups before each local save and keeps the
 3. `npm install`
 4. `npm start`
 
+## Packaging
+
+Build a Windows installer with electron-builder:
+
+1. Run `npm install`
+2. Run `npm run dist`
+3. Find the installer in the `release` folder
+
+Use `npm run dist:dir` to create an unpacked build for local testing without
+creating an installer.
+
 ## Checks
 
 - `npm test` runs the calculation and saved-data validation tests

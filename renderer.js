@@ -16,8 +16,13 @@ const dialogCancel = document.getElementById("dialog-cancel");
 const appError = document.getElementById("app-error");
 
 let data = { courses: [] };
+let lastSavedData = { courses: [] };
 let currentCourseId = null;
 let dialogResolver = null;
+
+function cloneData(value) {
+  return structuredClone(value);
+}
 
 if (!window.api) {
   let memory = { courses: [] };
@@ -56,9 +61,16 @@ function currentCourse() {
 async function persist() {
   try {
     await window.api.save(data);
+    lastSavedData = cloneData(data);
     appError.classList.add("hidden");
   } catch (error) {
     console.error("Failed to save grades:", error);
+    data = cloneData(lastSavedData);
+    if (courseView.classList.contains("hidden")) {
+      renderHome();
+    } else {
+      renderCourse();
+    }
     showAppError(
       "Your change could not be saved. Check available disk space and try again.",
     );
@@ -523,12 +535,14 @@ async function addAssignment(categoryId) {
 async function init() {
   try {
     data = await window.api.load();
+    lastSavedData = cloneData(data);
   } catch (error) {
     console.error("Failed to load grades:", error);
     showAppError(
       "Your saved grades could not be loaded. The original data was preserved.",
     );
     data = { courses: [] };
+    lastSavedData = cloneData(data);
   }
   if (!data || !Array.isArray(data.courses)) {
     data = { courses: [] };
@@ -574,7 +588,6 @@ document.getElementById("import-data").addEventListener("click", async () => {
     return;
   }
 
-  const previousData = data;
   data = imported;
   try {
     await persist();
@@ -583,7 +596,6 @@ document.getElementById("import-data").addEventListener("click", async () => {
     appError.textContent = "Grade data imported successfully.";
     appError.classList.remove("hidden");
   } catch {
-    data = previousData;
-    renderHome();
+    currentCourseId = null;
   }
 });

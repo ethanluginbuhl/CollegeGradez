@@ -5,6 +5,8 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
+    "dist": "electron-builder",
+    "dist:dir": "electron-builder --dir",
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
@@ -15,16 +17,45 @@
     "email": "ethanjluginbuhl@gmail.com",
     "url": "https://github.com/ethanluginbuhl"
   },
+  "build": {
+    "appId": "com.ethanluginbuhl.collegegradez",
+    "productName": "CollegeGradez",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "assets/**/*",
+      "calc.js",
+      "data-schema.js",
+      "index.html",
+      "main.js",
+      "package.json",
+      "preload.js",
+      "renderer.js",
+      "styles.css"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "build/icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
+  },
   "license": "MIT",
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "electron": "^38.4.0",
+    "electron": "^45.0.0",
+    "electron-builder": "^26.0.12",
     "eslint": "^10.13.0",
     "eslint-config-prettier": "^10.1.8",
     "globals": "^17.13.0",
     "prettier": "3.9.10"
   },
   "allowScripts": {
-    "electron@38.8.6": true
+    "electron@45.0.0": true
   }
 }

@@ -47,3 +47,13 @@ test("rejects negative category weights", () => {
   data.courses[0].categories[0].weight = -1;
   assert.throws(() => validateData(data), /invalid weight/);
 });
+
+test("rejects duplicate IDs and negative earned points", () => {
+  const duplicate = validData();
+  duplicate.courses.push({ ...duplicate.courses[0] });
+  assert.throws(() => validateData(duplicate), /duplicate id/);
+
+  const negative = validData();
+  negative.courses[0].assignments[0].earned = -1;
+  assert.throws(() => validateData(negative), /invalid points/);
+});
