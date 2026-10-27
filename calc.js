@@ -6,6 +6,21 @@
     root.Calc = api;
   }
 })(typeof window !== "undefined" ? window : globalThis, function () {
+  const DEFAULT_GRADING_POLICY = {
+    bands: [
+      { letter: "A", minPercent: 93, points: 4 },
+      { letter: "A-", minPercent: 90, points: 3.7 },
+      { letter: "B+", minPercent: 87, points: 3.3 },
+      { letter: "B", minPercent: 83, points: 3 },
+      { letter: "B-", minPercent: 80, points: 2.7 },
+      { letter: "C+", minPercent: 77, points: 2.3 },
+      { letter: "C", minPercent: 73, points: 2 },
+      { letter: "C-", minPercent: 70, points: 1.7 },
+      { letter: "D", minPercent: 60, points: 1 },
+      { letter: "F", minPercent: 0, points: 0 },
+    ],
+  };
+
   function isComplete(assignment) {
     return isNumber(assignment.earned) && isNumber(assignment.possible);
   }
@@ -114,5 +129,79 @@
     };
   }
 
-  return { dropLowest, categoryResult, courseGrade };
+  function gradingPolicyFor(course, defaultPolicy) {
+    return course && course.gradingPolicy
+      ? course.gradingPolicy
+      : defaultPolicy || DEFAULT_GRADING_POLICY;
+  }
+
+  function letterGrade(percent, policy) {
+    if (!isNumber(percent) || !policy || !Array.isArray(policy.bands)) {
+      return null;
+    }
+    return policy.bands.find((band) => percent >= band.minPercent) || null;
+  }
+
+  function courseGpa(course, defaultPolicy) {
+    const grade = courseGrade(course);
+    const band = letterGrade(
+      grade.percent,
+      gradingPolicyFor(course, defaultPolicy),
+    );
+    return {
+      percent: grade.percent,
+      letter: band ? band.letter : null,
+      points: band ? band.points : null,
+      credits:
+        isNumber(course && course.credits) && course.credits > 0
+          ? course.credits
+          : null,
+      eligible: Boolean(
+        band &&
+        isNumber(course && course.credits) &&
+        course.credits > 0 &&
+        isNumber(grade.percent),
+      ),
+    };
+  }
+
+  function calculateGpa(data) {
+    const courses = (data && data.courses) || [];
+    const defaultPolicy =
+      data && data.gradingPolicy ? data.gradingPolicy : DEFAULT_GRADING_POLICY;
+    const courseResults = courses.map((course) => ({
+      course,
+      result: courseGpa(course, defaultPolicy),
+    }));
+    const eligible = courseResults.filter((item) => item.result.eligible);
+    const credits = eligible.reduce(
+      (sum, item) => sum + item.result.credits,
+      0,
+    );
+    return {
+      courses: courseResults,
+      credits,
+      points: eligible.reduce(
+        (sum, item) => sum + item.result.points * item.result.credits,
+        0,
+      ),
+      gpa:
+        credits > 0
+          ? eligible.reduce(
+              (sum, item) => sum + item.result.points * item.result.credits,
+              0,
+            ) / credits
+          : null,
+    };
+  }
+
+  return {
+    DEFAULT_GRADING_POLICY,
+    dropLowest,
+    categoryResult,
+    courseGrade,
+    letterGrade,
+    courseGpa,
+    calculateGpa,
+  };
 });

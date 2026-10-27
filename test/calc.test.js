@@ -1,6 +1,11 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
-const { courseGrade, dropLowest } = require("../calc.js");
+const {
+  calculateGpa,
+  courseGrade,
+  dropLowest,
+  letterGrade,
+} = require("../calc.js");
 
 test("calculates weighted grades using scored categories", () => {
   const course = {
@@ -44,4 +49,55 @@ test("does not drop all scored assignments", () => {
   assert.equal(dropLowest(assignments, 2).length, 2);
   assert.equal(dropLowest(assignments, 1).length, 1);
   assert.equal(dropLowest(assignments, 1)[0].earned, 9);
+});
+
+test("maps percentages using a custom ordered grading policy", () => {
+  const policy = {
+    bands: [
+      { letter: "A", minPercent: 90, points: 4 },
+      { letter: "B", minPercent: 80, points: 3 },
+      { letter: "F", minPercent: 0, points: 0 },
+    ],
+  };
+
+  assert.equal(letterGrade(95, policy).letter, "A");
+  assert.equal(letterGrade(84, policy).points, 3);
+  assert.equal(letterGrade(50, policy).letter, "F");
+});
+
+test("calculates a credit-weighted GPA and excludes incomplete courses", () => {
+  const data = {
+    gradingPolicy: {
+      bands: [
+        { letter: "A", minPercent: 90, points: 4 },
+        { letter: "B", minPercent: 80, points: 3 },
+        { letter: "F", minPercent: 0, points: 0 },
+      ],
+    },
+    courses: [
+      {
+        gradingMode: "points",
+        credits: 4,
+        categories: [{ id: "all", weight: 100, dropLowest: 0 }],
+        assignments: [{ categoryId: "all", earned: 90, possible: 100 }],
+      },
+      {
+        gradingMode: "points",
+        credits: 2,
+        categories: [{ id: "all", weight: 100, dropLowest: 0 }],
+        assignments: [{ categoryId: "all", earned: 80, possible: 100 }],
+      },
+      {
+        gradingMode: "points",
+        credits: 3,
+        categories: [{ id: "all", weight: 100, dropLowest: 0 }],
+        assignments: [],
+      },
+    ],
+  };
+
+  const result = calculateGpa(data);
+  assert.equal(result.credits, 6);
+  assert.equal(result.gpa, 11 / 3);
+  assert.equal(result.courses[2].result.eligible, false);
 });

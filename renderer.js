@@ -4,6 +4,10 @@ const courseList = document.getElementById("course-list");
 const homeEmpty = document.getElementById("home-empty");
 const courseNameInput = document.getElementById("course-name");
 const gradeSummary = document.getElementById("grade-summary");
+const courseGpaCard = document.getElementById("course-gpa-card");
+const overallGpaCard = document.getElementById("overall-gpa-card");
+const overviewGpaCard = document.getElementById("overview-gpa-card");
+const defaultPolicyEditor = document.getElementById("default-policy-editor");
 const categoryRows = document.getElementById("category-rows");
 const assignmentGroups = document.getElementById("assignment-groups");
 const categoriesEmpty = document.getElementById("categories-empty");
@@ -19,6 +23,8 @@ let data = { courses: [] };
 let lastSavedData = { courses: [] };
 let currentCourseId = null;
 let dialogResolver = null;
+
+const defaultGradingPolicy = () => cloneData(Calc.DEFAULT_GRADING_POLICY);
 
 function cloneData(value) {
   return structuredClone(value);
@@ -54,6 +60,12 @@ function formatPoints(value) {
   return String(Number(value.toFixed(2)));
 }
 
+function formatGpa(value) {
+  return value === null || value === undefined || Number.isNaN(value)
+    ? "—"
+    : value.toFixed(2);
+}
+
 function currentCourse() {
   return data.courses.find((course) => course.id === currentCourseId) || null;
 }
@@ -72,7 +84,9 @@ async function persist() {
       renderCourse();
     }
     showAppError(
-      "Your change could not be saved. Check available disk space and try again.",
+      error && error.message
+        ? `Your change could not be saved: ${error.message}`
+        : "Your change could not be saved. Check available disk space and try again.",
     );
     throw error;
   }
@@ -193,11 +207,186 @@ function renderGradeSummary(course) {
     <p class="overall">Current Grade: ${overallLabel}</p>
     <ul>${categoryLines || "<li><span>No categories yet</span><span></span></li>"}</ul>
   `;
+  if (overallGpaCard) {
+    renderOverallGpa();
+  }
+}
+
+function renderPolicyEditor(container, policy, onChange) {
+  container.innerHTML = `
+    <table class="data-table policy-table">
+      <thead><tr><th>Letter</th><th>Minimum %</th><th>Points</th><th></th></tr></thead>
+      <tbody></tbody>
+    </table>
+    <button type="button" class="ghost add-policy-band">Add Grade</button>
+    <p class="policy-error hidden" role="alert"></p>
+  `;
+  const error = container.querySelector(".policy-error");
+  function showPolicyError(message) {
+    error.textContent = message;
+    error.classList.toggle("hidden", !message);
+  }
+  function validPolicy() {
+    let previous = Infinity;
+    for (const band of policy.bands) {
+      if (
+        !band.letter ||
+        !Number.isFinite(band.minPercent) ||
+        band.minPercent < 0 ||
+        band.minPercent > 100 ||
+        band.minPercent >= previous ||
+        !Number.isFinite(band.points) ||
+        band.points < 0
+      ) {
+        return false;
+      }
+      previous = band.minPercent;
+    }
+    return policy.bands.length > 0 && previous === 0;
+  }
+  const body = container.querySelector("tbody");
+  for (const [index, band] of policy.bands.entries()) {
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td><input type="text" class="policy-letter" maxlength="12"></td>
+      <td><input type="number" class="policy-min" min="0" max="100" step="0.1"></td>
+      <td><input type="number" class="policy-points" min="0" step="0.01"></td>
+      <td><button type="button" class="danger icon remove-policy-band">Remove</button></td>
+    `;
+    row.querySelector(".policy-letter").value = band.letter;
+    row.querySelector(".policy-min").value = band.minPercent;
+    row.querySelector(".policy-points").value = band.points;
+    row.querySelectorAll("input").forEach((input) => {
+      input.addEventListener("change", async () => {
+        band.letter =
+          row.querySelector(".policy-letter").value.trim() || "Grade";
+        band.minPercent = parseOptionalNumber(
+          row.querySelector(".policy-min").value,
+        );
+        band.points = parseOptionalNumber(
+          row.querySelector(".policy-points").value,
+        );
+        if (!validPolicy()) {
+          showPolicyError(
+            "Use descending minimum percentages ending with a 0% grade, and enter non-negative points.",
+          );
+          return;
+        }
+        showPolicyError("");
+        try {
+          await onChange();
+        } catch {
+          showPolicyError("This grading policy could not be saved.");
+        }
+      });
+    });
+    row
+      .querySelector(".remove-policy-band")
+      .addEventListener("click", async () => {
+        if (policy.bands.length <= 1) {
+          return;
+        }
+        policy.bands.splice(index, 1);
+        if (!validPolicy()) {
+          policy.bands.splice(index, 0, band);
+          showPolicyError(
+            "At least one grade must remain, and the minimum percentages must end at 0%.",
+          );
+          return;
+        }
+        try {
+          await onChange();
+        } catch {
+          showPolicyError("This grading policy could not be saved.");
+        }
+      });
+    body.appendChild(row);
+  }
+  container
+    .querySelector(".add-policy-band")
+    .addEventListener("click", async () => {
+      const lowest = policy.bands[policy.bands.length - 1];
+      policy.bands.splice(policy.bands.length - 1, 0, {
+        letter: "New",
+        minPercent: Math.min(100, (lowest && lowest.minPercent + 1) || 1),
+        points: 0,
+      });
+      try {
+        await onChange();
+      } catch {
+        showPolicyError("This grading policy could not be saved.");
+      }
+    });
+}
+
+function renderCourseGpa(course) {
+  const result = Calc.courseGpa(course, data.gradingPolicy);
+  courseGpaCard.innerHTML = `
+    <h3>Course GPA</h3>
+    <p class="gpa-value">${result.letter || "—"} <span>${formatGpa(result.points)}</span></p>
+    <label>
+      Credits
+      <input id="course-credits" type="number" min="0" step="0.5">
+    </label>
+    <label class="checkbox-label">
+      <input id="course-policy-override" type="checkbox">
+      Use a custom policy for this course
+    </label>
+    <div id="course-policy-editor" class="course-policy-editor"></div>
+    <p class="panel-help">${result.eligible ? "Included in overall GPA." : "Complete the course grade and enter positive credits to include it."}</p>
+  `;
+  const creditsInput = courseGpaCard.querySelector("#course-credits");
+  creditsInput.value = course.credits ?? "";
+  creditsInput.addEventListener("change", async () => {
+    course.credits = parseOptionalNumber(creditsInput.value);
+    await persist();
+    renderCourse();
+  });
+  const overrideInput = courseGpaCard.querySelector("#course-policy-override");
+  overrideInput.checked = Boolean(course.gradingPolicy);
+  overrideInput.addEventListener("change", async () => {
+    course.gradingPolicy = overrideInput.checked
+      ? cloneData(data.gradingPolicy)
+      : null;
+    await persist();
+    renderCourse();
+  });
+  if (course.gradingPolicy) {
+    renderPolicyEditor(
+      courseGpaCard.querySelector("#course-policy-editor"),
+      course.gradingPolicy,
+      async () => {
+        await persist();
+        renderCourse();
+      },
+    );
+  }
+}
+
+function renderOverallGpa(card = overallGpaCard) {
+  const overall = Calc.calculateGpa(data);
+  const rows = overall.courses
+    .map(
+      ({ course, result }) =>
+        `<li><span>${escapeHtml(course.name || "Untitled")}</span><span>${result.eligible ? `${result.letter} (${formatGpa(result.points)})` : "Excluded"}</span></li>`,
+    )
+    .join("");
+  card.innerHTML = `
+    <h3>Overall GPA</h3>
+    <p class="gpa-value">${formatGpa(overall.gpa)}</p>
+    <p class="panel-help">${formatPoints(overall.credits)} eligible credits</p>
+    <ul>${rows || "<li><span>No courses yet</span><span></span></li>"}</ul>
+  `;
 }
 
 function renderHome() {
   courseList.innerHTML = "";
   homeEmpty.classList.toggle("hidden", data.courses.length > 0);
+  renderOverallGpa(overviewGpaCard);
+  renderPolicyEditor(defaultPolicyEditor, data.gradingPolicy, async () => {
+    await persist();
+    renderHome();
+  });
 
   for (const course of data.courses) {
     const grade = Calc.courseGrade(course);
@@ -258,6 +447,8 @@ function renderCourse() {
     `input[name="grading-mode"][value="${course.gradingMode}"]`,
   ).checked = true;
 
+  renderCourseGpa(course);
+  renderOverallGpa();
   renderGradeSummary(course);
 
   categoriesEmpty.classList.toggle("hidden", course.categories.length > 0);
@@ -455,6 +646,8 @@ async function addCourse() {
     id: uid(),
     name: name.trim() || "Untitled course",
     gradingMode: "weighted",
+    credits: 3,
+    gradingPolicy: null,
     categories: [
       { id: categoryId, name: "Assignments", weight: 100, dropLowest: 0 },
     ],
@@ -546,6 +739,9 @@ async function init() {
   }
   if (!data || !Array.isArray(data.courses)) {
     data = { courses: [] };
+  }
+  if (!data.gradingPolicy) {
+    data.gradingPolicy = defaultGradingPolicy();
   }
   showHome();
 }

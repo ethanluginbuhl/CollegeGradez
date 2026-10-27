@@ -6,7 +6,8 @@ A college grade calculator that is hopefully better than a spreadsheet
 
 - Add undo and redo features
 - Current grade and the grade needed on remaining work to hit a target
-- Semester and cumulative GPA, with a toggle for 4.0 vs. plus/minus scales
+- Credit-weighted GPA using customizable numeric-to-letter and letter-to-point
+  grading policies
 - Dragging to reorder courses, assignments, etc.
 - Dynamic syllabus ingestion to automatically set grading policies
 - One-click grade import from a screenshot
@@ -19,6 +20,15 @@ confirmation before replacing the current courses.
 
 The app also creates timestamped backups before each local save and keeps the
 10 most recent backups alongside its local data file.
+
+## GPA grading policies
+
+The Courses screen includes a default grading policy made from ordered
+percentage thresholds, letter labels, and grade-point values. This supports
+schools with or without plus/minus grades and lets you use institution-specific
+thresholds. A course can override the default policy, and its credits determine
+its weight in the overall GPA. Courses without a completed grade or positive
+credits are shown as excluded instead of being treated as zero.
 
 ## Issues to Fix
 
@@ -53,6 +63,14 @@ creating an installer.
 - `npm run lint` checks JavaScript with ESLint
 - `npm run format:check` checks formatting with Prettier
 - `npm run format` formats supported project files
+
+## Copilot customization
+
+Repository-specific Copilot guidance is stored in
+[`.github/copilot-instructions.md`](.github/copilot-instructions.md). A
+read-only [CollegeGradez reviewer agent](.github/agents/collegegradez-reviewer.agent.md)
+is also available for focused diff reviews covering calculations, saved-data
+compatibility, Electron boundaries, and responsive UI behavior.
 
 ## How to Update Packages
 

@@ -33,7 +33,24 @@
         <p id="home-empty" class="empty hidden">
           No courses yet. Add one to start tracking grades.
         </p>
-        <ul id="course-list" class="course-list"></ul>
+        <div class="overview-layout">
+          <section class="overview-courses">
+            <ul id="course-list" class="course-list"></ul>
+          </section>
+          <aside class="overview-sidebar">
+            <section id="overview-gpa-card" class="summary"></section>
+            <section class="panel policy-panel">
+              <div class="panel-header">
+                <h3>Default Grading Policy</h3>
+              </div>
+              <p class="panel-help">
+                Set the default percentage thresholds and grade points used by
+                courses without an override.
+              </p>
+              <div id="default-policy-editor"></div>
+            </section>
+          </aside>
+        </div>
       </main>
 
       <main id="view-course" class="view hidden">
@@ -44,56 +61,69 @@
           </button>
         </div>
 
-        <section class="course-meta">
-          <label>
-            Course Name
-            <input id="course-name" type="text" maxlength="120" />
-          </label>
-          <fieldset class="mode-toggle">
-            <legend>Grading System</legend>
-            <label>
-              <input type="radio" name="grading-mode" value="weighted" />
-              Weighted Categories
-            </label>
-            <label>
-              <input type="radio" name="grading-mode" value="points" />
-              Points
-            </label>
-          </fieldset>
-        </section>
+        <div class="course-layout">
+          <aside class="gpa-sidebar left-sidebar">
+            <section id="course-gpa-card" class="summary"></section>
+          </aside>
 
-        <section id="grade-summary" class="summary"></section>
+          <div class="course-main">
+            <section class="course-meta">
+              <label>
+                Course Name
+                <input id="course-name" type="text" maxlength="120" />
+              </label>
+              <fieldset class="mode-toggle">
+                <legend>Grading System</legend>
+                <label>
+                  <input type="radio" name="grading-mode" value="weighted" />
+                  Weighted Categories
+                </label>
+                <label>
+                  <input type="radio" name="grading-mode" value="points" />
+                  Points
+                </label>
+              </fieldset>
+            </section>
 
-        <section class="panel">
-          <div class="panel-header">
-            <h3>Categories</h3>
-            <button id="add-category" type="button">Add Category</button>
+            <section id="grade-summary" class="summary"></section>
+
+            <section class="panel">
+              <div class="panel-header">
+                <h3>Categories</h3>
+                <button id="add-category" type="button">Add Category</button>
+              </div>
+              <p id="categories-empty" class="empty hidden">
+                Add at least one category (for example Homework or Exams).
+              </p>
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th class="weight-col">Weight %</th>
+                    <th>Drop Lowest</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="category-rows"></tbody>
+              </table>
+            </section>
+
+            <section class="panel">
+              <div class="panel-header">
+                <h3>Assignments</h3>
+              </div>
+              <p id="assignments-empty" class="empty hidden">
+                Add a category, then use its Add Assignment button to track
+                scores.
+              </p>
+              <div id="assignment-groups" class="assignment-groups"></div>
+            </section>
           </div>
-          <p id="categories-empty" class="empty hidden">
-            Add at least one category (for example Homework or Exams).
-          </p>
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th class="weight-col">Weight %</th>
-                <th>Drop Lowest</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody id="category-rows"></tbody>
-          </table>
-        </section>
 
-        <section class="panel">
-          <div class="panel-header">
-            <h3>Assignments</h3>
-          </div>
-          <p id="assignments-empty" class="empty hidden">
-            Add a category, then use its Add Assignment button to track scores.
-          </p>
-          <div id="assignment-groups" class="assignment-groups"></div>
-        </section>
+          <aside class="gpa-sidebar right-sidebar">
+            <section id="overall-gpa-card" class="summary"></section>
+          </aside>
+        </div>
       </main>
     </div>
 

@@ -57,3 +57,38 @@ test("rejects duplicate IDs and negative earned points", () => {
   negative.courses[0].assignments[0].earned = -1;
   assert.throws(() => validateData(negative), /invalid points/);
 });
+
+test("accepts custom default and course grading policies", () => {
+  const data = validData();
+  data.gradingPolicy = {
+    bands: [
+      { letter: "A+", minPercent: 97, points: 4 },
+      { letter: "A", minPercent: 90, points: 4 },
+      { letter: "F", minPercent: 0, points: 0 },
+    ],
+  };
+  data.courses[0].credits = 3;
+  data.courses[0].gradingPolicy = {
+    bands: [
+      { letter: "Pass", minPercent: 60, points: 4 },
+      { letter: "Fail", minPercent: 0, points: 0 },
+    ],
+  };
+  assert.deepEqual(validateData(data), data);
+});
+
+test("rejects unordered grading policy bands and negative credits", () => {
+  const unordered = validData();
+  unordered.gradingPolicy = {
+    bands: [
+      { letter: "A", minPercent: 80, points: 4 },
+      { letter: "B", minPercent: 90, points: 3 },
+      { letter: "F", minPercent: 0, points: 0 },
+    ],
+  };
+  assert.throws(() => validateData(unordered), /invalid band/);
+
+  const negativeCredits = validData();
+  negativeCredits.courses[0].credits = -1;
+  assert.throws(() => validateData(negativeCredits), /invalid credits/);
+});
