@@ -26,7 +26,7 @@ The app also creates timestamped backups before each local save and keeps the
 
 ## Things to Address Before Shipping
 
-- Integrate code formatting with Prettier and ESLint
+- Installer packaging with electron-builder
 
 ## Steps to Get Started with Development
 
