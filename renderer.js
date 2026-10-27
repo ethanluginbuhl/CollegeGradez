@@ -181,16 +181,16 @@ function renderGradeSummary(course) {
     .map((cat) => {
       const extra =
         course.gradingMode === "weighted" && cat.weight != null
-          ? ` · weight ${Number(cat.weight) || 0}%`
+          ? ` — Weight ${Number(cat.weight) || 0}%`
           : "";
       const dropped =
-        Number(cat.dropLowest) > 0 ? ` · drop ${cat.dropLowest}` : "";
+        Number(cat.dropLowest) > 0 ? ` — Drop ${cat.dropLowest}` : "";
       return `<li><span>${escapeHtml(cat.name || "Untitled")}${extra}${dropped}</span><span>${formatPercent(cat.percent)}</span></li>`;
     })
     .join("");
 
   gradeSummary.innerHTML = `
-    <p class="overall">Current grade: ${overallLabel}</p>
+    <p class="overall">Current Grade: ${overallLabel}</p>
     <ul>${categoryLines || "<li><span>No categories yet</span><span></span></li>"}</ul>
   `;
 }
@@ -368,7 +368,7 @@ function renderCourse() {
     const detail = category
       ? course.gradingMode === "weighted"
         ? `${Number(category.weight) || 0}% of course grade`
-        : "Points mode"
+        : "Points Mode"
       : "Choose a category by adding assignments from a category block";
     group.innerHTML = `
       <div class="assignment-group-header">
@@ -376,7 +376,7 @@ function renderCourse() {
           <h4></h4>
           <p></p>
         </div>
-        ${category ? '<button type="button" class="add-group-assignment">Add assignment</button>' : ""}
+        ${category ? '<button type="button" class="add-group-assignment">Add Assignment</button>' : ""}
       </div>
     `;
     group.querySelector("h4").textContent = title;
