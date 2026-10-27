@@ -1,11 +1,11 @@
 :root {
   --bg: #f4f1ea;
   --paper: #fffdf8;
-  --ink: #1A252C;
+  --ink: #1a252c;
   --muted: #5c6776;
   --line: #d9d2c5;
-  --accent: #0066CC;
-  --accent-hover: #0052A3;
+  --accent: #0066cc;
+  --accent-hover: #0052a3;
   --danger: #a33b3b;
   --danger-hover: #822e2e;
   --shadow: 0 8px 24px rgba(28, 36, 48, 0.08);
@@ -45,6 +45,12 @@ body {
   justify-content: space-between;
   gap: 12px;
   margin: 28px 0 16px;
+}
+
+.header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .view-header h2,
@@ -98,6 +104,15 @@ button.icon {
 
 .empty {
   color: var(--muted);
+}
+
+.app-error {
+  background: #f8ecec;
+  border: 1px solid #d9aaaa;
+  border-radius: 8px;
+  color: var(--danger-hover);
+  margin: 18px 0 0;
+  padding: 10px 12px;
 }
 
 .course-list {

@@ -48,7 +48,7 @@
   function categoryResult(category, assignments) {
     const remaining = dropLowest(
       categoryAssignments(category, assignments),
-      category && category.dropLowest
+      category && category.dropLowest,
     );
     const scored = remaining.filter(isComplete);
     const earned = scored.reduce((sum, item) => sum + item.earned, 0);
@@ -71,10 +71,11 @@
     const categories = (course && course.categories) || [];
     const assignments = (course && course.assignments) || [];
     const byCategory = categories.map((category) =>
-      categoryResult(category, assignments)
+      categoryResult(category, assignments),
     );
 
-    const mode = course && course.gradingMode === "points" ? "points" : "weighted";
+    const mode =
+      course && course.gradingMode === "points" ? "points" : "weighted";
 
     if (mode === "points") {
       const earned = byCategory.reduce((sum, cat) => sum + cat.earned, 0);
@@ -88,15 +89,20 @@
       };
     }
 
-    const active = byCategory.filter((cat) => cat.hasScored && cat.percent !== null);
-    const weightSum = active.reduce((sum, cat) => sum + (Number(cat.weight) || 0), 0);
+    const active = byCategory.filter(
+      (cat) => cat.hasScored && cat.percent !== null,
+    );
+    const weightSum = active.reduce(
+      (sum, cat) => sum + (Number(cat.weight) || 0),
+      0,
+    );
     if (active.length === 0 || weightSum <= 0) {
       return { percent: null, earned: 0, possible: 0, byCategory, mode };
     }
 
     const weighted = active.reduce(
       (sum, cat) => sum + cat.percent * (Number(cat.weight) || 0),
-      0
+      0,
     );
 
     return {

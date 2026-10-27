@@ -13,6 +13,7 @@ const dialogMessage = document.getElementById("dialog-message");
 const dialogInput = document.getElementById("dialog-input");
 const dialogOk = document.getElementById("dialog-ok");
 const dialogCancel = document.getElementById("dialog-cancel");
+const appError = document.getElementById("app-error");
 
 let data = { courses: [] };
 let currentCourseId = null;
@@ -25,6 +26,8 @@ if (!window.api) {
     save: async (next) => {
       memory = next;
     },
+    export: async () => false,
+    import: async () => null,
   };
 }
 
@@ -51,7 +54,16 @@ function currentCourse() {
 }
 
 async function persist() {
-  await window.api.save(data);
+  try {
+    await window.api.save(data);
+    appError.classList.add("hidden");
+  } catch (error) {
+    console.error("Failed to save grades:", error);
+    showAppError(
+      "Your change could not be saved. Check available disk space and try again.",
+    );
+    throw error;
+  }
 }
 
 function closeDialog(result) {
@@ -63,7 +75,12 @@ function closeDialog(result) {
   }
 }
 
-function openDialog({ message, defaultValue = "", showInput = false, danger = false }) {
+function openDialog({
+  message,
+  defaultValue = "",
+  showInput = false,
+  danger = false,
+}) {
   return new Promise((resolve) => {
     dialogResolver = resolve;
     dialogMessage.textContent = message;
@@ -85,8 +102,13 @@ function askText(message, defaultValue = "") {
   return openDialog({ message, defaultValue, showInput: true });
 }
 
-function askConfirm(message) {
-  return openDialog({ message, showInput: false, danger: true });
+function askConfirm(message, danger = true) {
+  return openDialog({ message, showInput: false, danger });
+}
+
+function showAppError(message) {
+  appError.textContent = message;
+  appError.classList.remove("hidden");
 }
 
 dialogOk.addEventListener("click", () => {
@@ -149,7 +171,8 @@ function renderGradeSummary(course) {
         course.gradingMode === "weighted" && cat.weight != null
           ? ` · weight ${Number(cat.weight) || 0}%`
           : "";
-      const dropped = Number(cat.dropLowest) > 0 ? ` · drop ${cat.dropLowest}` : "";
+      const dropped =
+        Number(cat.dropLowest) > 0 ? ` · drop ${cat.dropLowest}` : "";
       return `<li><span>${escapeHtml(cat.name || "Untitled")}${extra}${dropped}</span><span>${formatPercent(cat.percent)}</span></li>`;
     })
     .join("");
@@ -180,7 +203,9 @@ function renderHome() {
     `;
     item.querySelector("h3").textContent = course.name || "Untitled course";
     item.querySelector(".grade").textContent = formatPercent(grade.percent);
-    item.querySelector(".open").addEventListener("click", () => showCourse(course.id));
+    item
+      .querySelector(".open")
+      .addEventListener("click", () => showCourse(course.id));
     item.querySelector(".rename").addEventListener("click", async () => {
       const next = await askText("Course name", course.name);
       if (next === null) {
@@ -195,7 +220,9 @@ function renderHome() {
       if (!ok) {
         return;
       }
-      data.courses = data.courses.filter((itemCourse) => itemCourse.id !== course.id);
+      data.courses = data.courses.filter(
+        (itemCourse) => itemCourse.id !== course.id,
+      );
       await persist();
       renderHome();
     });
@@ -210,10 +237,13 @@ function renderCourse() {
     return;
   }
 
-  document.body.classList.toggle("points-mode", course.gradingMode === "points");
+  document.body.classList.toggle(
+    "points-mode",
+    course.gradingMode === "points",
+  );
   courseNameInput.value = course.name;
   document.querySelector(
-    `input[name="grading-mode"][value="${course.gradingMode}"]`
+    `input[name="grading-mode"][value="${course.gradingMode}"]`,
   ).checked = true;
 
   renderGradeSummary(course);
@@ -254,12 +284,14 @@ function renderCourse() {
     });
     row.querySelector("button").addEventListener("click", async () => {
       const ok = await askConfirm(
-        `Remove category “${category.name}”? Assignments in it will be unassigned.`
+        `Remove category “${category.name}”? Assignments in it will be unassigned.`,
       );
       if (!ok) {
         return;
       }
-      course.categories = course.categories.filter((item) => item.id !== category.id);
+      course.categories = course.categories.filter(
+        (item) => item.id !== category.id,
+      );
       for (const assignment of course.assignments) {
         if (assignment.categoryId === category.id) {
           assignment.categoryId = null;
@@ -273,7 +305,7 @@ function renderCourse() {
 
   assignmentsEmpty.classList.toggle(
     "hidden",
-    course.categories.length > 0 || course.assignments.length > 0
+    course.categories.length > 0 || course.assignments.length > 0,
   );
   assignmentGroups.innerHTML = "";
 
@@ -308,7 +340,9 @@ function renderCourse() {
       renderGradeSummary(course);
     });
     row.querySelector("button").addEventListener("click", async () => {
-      course.assignments = course.assignments.filter((item) => item.id !== assignment.id);
+      course.assignments = course.assignments.filter(
+        (item) => item.id !== assignment.id,
+      );
       await persist();
       renderCourse();
     });
@@ -374,12 +408,17 @@ function renderCourse() {
   for (const category of course.categories) {
     renderAssignmentGroup(
       category,
-      course.assignments.filter((assignment) => assignment.categoryId === category.id)
+      course.assignments.filter(
+        (assignment) => assignment.categoryId === category.id,
+      ),
     );
   }
 
   const unassigned = course.assignments.filter(
-    (assignment) => !course.categories.some((category) => category.id === assignment.categoryId)
+    (assignment) =>
+      !course.categories.some(
+        (category) => category.id === assignment.categoryId,
+      ),
   );
   if (unassigned.length > 0) {
     renderAssignmentGroup(null, unassigned);
@@ -482,7 +521,15 @@ async function addAssignment(categoryId) {
 }
 
 async function init() {
-  data = await window.api.load();
+  try {
+    data = await window.api.load();
+  } catch (error) {
+    console.error("Failed to load grades:", error);
+    showAppError(
+      "Your saved grades could not be loaded. The original data was preserved.",
+    );
+    data = { courses: [] };
+  }
   if (!data || !Array.isArray(data.courses)) {
     data = { courses: [] };
   }
@@ -490,3 +537,53 @@ async function init() {
 }
 
 init();
+
+document.getElementById("export-data").addEventListener("click", async () => {
+  try {
+    const exported = await window.api.export(data);
+    if (exported) {
+      appError.textContent = "Grade data exported successfully.";
+      appError.classList.remove("hidden");
+    }
+  } catch (error) {
+    console.error("Failed to export grades:", error);
+    showAppError("Grade data could not be exported.");
+  }
+});
+
+document.getElementById("import-data").addEventListener("click", async () => {
+  let imported;
+  try {
+    imported = await window.api.import();
+  } catch (error) {
+    console.error("Failed to import grades:", error);
+    showAppError(
+      "That file could not be imported. Choose a valid CollegeGradez JSON export.",
+    );
+    return;
+  }
+  if (!imported) {
+    return;
+  }
+
+  const confirmed = await askConfirm(
+    "Importing will replace all current courses. Continue?",
+    false,
+  );
+  if (!confirmed) {
+    return;
+  }
+
+  const previousData = data;
+  data = imported;
+  try {
+    await persist();
+    currentCourseId = null;
+    showHome();
+    appError.textContent = "Grade data imported successfully.";
+    appError.classList.remove("hidden");
+  } catch {
+    data = previousData;
+    renderHome();
+  }
+});

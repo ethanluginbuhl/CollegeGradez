@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -14,13 +14,21 @@
     <div id="app">
       <header class="topbar">
         <h1>CollegeGradez</h1>
-        <p class="tagline">A college grade calculator that is hopefully better than a spreadsheet.</p>
+        <p class="tagline">
+          A college grade calculator that is hopefully better than a
+          spreadsheet.
+        </p>
       </header>
+      <p id="app-error" class="app-error hidden" role="alert"></p>
 
       <main id="view-home" class="view">
         <div class="view-header">
           <h2>Courses</h2>
-          <button id="add-course" type="button">Add course</button>
+          <div class="header-actions">
+            <button id="import-data" type="button" class="ghost">Import</button>
+            <button id="export-data" type="button" class="ghost">Export</button>
+            <button id="add-course" type="button">Add course</button>
+          </div>
         </div>
         <p id="home-empty" class="empty hidden">
           No courses yet. Add one to start tracking grades.
@@ -31,7 +39,9 @@
       <main id="view-course" class="view hidden">
         <div class="view-header">
           <button id="back-home" type="button" class="ghost">Back</button>
-          <button id="delete-course" type="button" class="danger">Delete course</button>
+          <button id="delete-course" type="button" class="danger">
+            Delete course
+          </button>
         </div>
 
         <section class="course-meta">
@@ -87,7 +97,13 @@
       </main>
     </div>
 
-    <div id="dialog" class="dialog hidden" role="dialog" aria-modal="true" aria-labelledby="dialog-message">
+    <div
+      id="dialog"
+      class="dialog hidden"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="dialog-message"
+    >
       <div class="dialog-card">
         <p id="dialog-message"></p>
         <input id="dialog-input" type="text" maxlength="120" />

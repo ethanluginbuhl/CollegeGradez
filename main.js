@@ -1,21 +1,23 @@
-const { app, BrowserWindow, ipcMain } = require("electron");
+const { app, BrowserWindow, ipcMain, dialog } = require("electron");
 const path = require("path");
 const fs = require("fs");
+const { validateData } = require("./data-schema");
 
 const DATA_FILE = () => path.join(app.getPath("userData"), "grades.json");
+let mainWindow;
 
 function emptyData() {
   return { courses: [] };
 }
 
 function createWindow() {
-  const win = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width: 980,
     height: 720,
     minWidth: 720,
     minHeight: 520,
     title: "CollegeGradez",
-    icon: path.join(__dirname, 'assets/icon.png'),
+    icon: path.join(__dirname, "assets/icon.png"),
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       contextIsolation: true,
@@ -24,31 +26,63 @@ function createWindow() {
     },
   });
 
-  win.loadFile("index.html");
+  mainWindow.loadFile("index.html");
 }
 
 function readData() {
+  const file = DATA_FILE();
   try {
-    const raw = fs.readFileSync(DATA_FILE(), "utf8");
-    const parsed = JSON.parse(raw);
-    if (!parsed || !Array.isArray(parsed.courses)) {
+    const parsed = JSON.parse(fs.readFileSync(file, "utf8"));
+    return validateData(parsed);
+  } catch (err) {
+    if (err.code === "ENOENT") {
       return emptyData();
     }
-    return parsed;
-  } catch (err) {
-    if (err.code !== "ENOENT") {
-      console.error("Failed to read grades.json:", err);
+    const backup = `${file}.corrupt-${Date.now()}`;
+    try {
+      fs.renameSync(file, backup);
+      console.error(`Invalid grades data moved to ${backup}:`, err);
+    } catch (backupError) {
+      console.error("Failed to preserve invalid grades data:", backupError);
     }
-    return emptyData();
+    throw new Error(
+      "Your saved grade data could not be read. The original file was preserved for recovery.",
+      { cause: err },
+    );
   }
 }
 
 function writeData(data) {
-  if (!data || !Array.isArray(data.courses)) {
-    throw new Error("Invalid data: expected { courses: [] }");
+  validateData(data);
+  const file = DATA_FILE();
+  const temporaryFile = `${file}.tmp-${process.pid}`;
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  if (fs.existsSync(file)) {
+    const backupPrefix = `${path.basename(file)}.backup-`;
+    fs.copyFileSync(
+      file,
+      path.join(path.dirname(file), `${backupPrefix}${timestamp()}`),
+    );
+    const backups = fs
+      .readdirSync(path.dirname(file))
+      .filter((name) => name.startsWith(backupPrefix))
+      .sort()
+      .reverse();
+    for (const oldBackup of backups.slice(10)) {
+      fs.unlinkSync(path.join(path.dirname(file), oldBackup));
+    }
   }
-  fs.mkdirSync(path.dirname(DATA_FILE()), { recursive: true });
-  fs.writeFileSync(DATA_FILE(), JSON.stringify(data, null, 2), "utf8");
+  fs.writeFileSync(temporaryFile, JSON.stringify(data, null, 2), "utf8");
+  fs.renameSync(temporaryFile, file);
+}
+
+function timestamp() {
+  return new Date().toISOString().replace(/[:.]/g, "-");
+}
+
+function readImportFile(file) {
+  const parsed = JSON.parse(fs.readFileSync(file, "utf8"));
+  return validateData(parsed);
 }
 
 app.whenReady().then(() => {
@@ -56,6 +90,30 @@ app.whenReady().then(() => {
   ipcMain.handle("data:save", (_event, data) => {
     writeData(data);
     return true;
+  });
+  ipcMain.handle("data:export", async (_event, data) => {
+    validateData(data);
+    const result = await dialog.showSaveDialog(mainWindow, {
+      title: "Export grade data",
+      defaultPath: "collegegradez-backup.json",
+      filters: [{ name: "JSON files", extensions: ["json"] }],
+    });
+    if (result.canceled || !result.filePath) {
+      return false;
+    }
+    fs.writeFileSync(result.filePath, JSON.stringify(data, null, 2), "utf8");
+    return true;
+  });
+  ipcMain.handle("data:import", async () => {
+    const result = await dialog.showOpenDialog(mainWindow, {
+      title: "Import grade data",
+      properties: ["openFile"],
+      filters: [{ name: "JSON files", extensions: ["json"] }],
+    });
+    if (result.canceled || result.filePaths.length === 0) {
+      return null;
+    }
+    return readImportFile(result.filePaths[0]);
   });
 
   createWindow();
