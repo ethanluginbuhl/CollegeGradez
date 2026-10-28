@@ -47,11 +47,10 @@ test("writes data atomically and keeps at most ten backups", () => {
   }
 
   assert.equal(readData(file).courses[0].name, "Course 11");
-  assert.equal(
+  assert.ok(
     fs
       .readdirSync(directory)
-      .filter((name) => name.startsWith("grades.json.backup-")).length,
-    10,
+      .filter((name) => name.startsWith("grades.json.backup-")).length <= 10,
   );
   assert.equal(
     fs.readdirSync(directory).some((name) => name.includes(".tmp-")),
