@@ -137,7 +137,7 @@ npm run dist:dir
 ```
 
 Before publishing releases, obtain a Windows code-signing certificate and
-decide how installers will be distributed and updated.
+decide how installers will be distributed and updated. Also look into figuring out how to prevent the installer window from appearing grainy.
 
 ## Project guidance
 
