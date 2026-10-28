@@ -1,14 +1,58 @@
 # CollegeGradez
 
-A college grade calculator that is hopefully better than a spreadsheet
+CollegeGradez is a Windows desktop grade tracker and GPA calculator built with
+Electron. It is intended to be a practical, local-first alternative to
+maintaining grades in a spreadsheet.
 
-## Features to Implement
+> **Status:** Beta (`0.1.0-beta.1`). The application is usable, but installers
+> and release distribution are still being prepared.
 
-- Add undo and redo features
-- Current grade and the grade needed on remaining work to hit a target
-- Dragging to reorder courses, assignments, etc.
-- Dynamic syllabus ingestion to automatically set grading policies
-- One-click grade import from a screenshot
+## What it does today
+
+- Track multiple courses, categories, and assignments.
+- Calculate grades using weighted categories or total points.
+- Drop the lowest scored assignments within a category.
+- Show live course grade summaries and overall GPA.
+- Configure a default grading policy with custom percentage thresholds, letter
+  grades, and grade points.
+- Override the default grading policy for an individual course.
+- Weight overall GPA by course credits and clearly exclude incomplete or
+  ineligible courses instead of treating them as zero.
+- Save data locally and create up to 10 timestamped backups before replacing
+  the saved file.
+- Export grade data to portable JSON and import it again after schema
+  validation and confirmation.
+- Preserve invalid saved data for recovery instead of silently replacing it.
+- Run in a context-isolated, sandboxed Electron renderer with a narrow preload
+  API.
+
+## Roadmap
+
+These are the current feature ideas, in roughly the order that would provide
+the most value to students while keeping the app reliable.
+
+### Near-term
+
+- Add undo and redo for course, category, assignment, and grading-policy edits.
+- Add a projection tool for the grade needed on remaining work or a final exam
+  to reach a target course grade.
+- Add course, category, and assignment reordering.
+- Add a clear what-if mode so students can test hypothetical scores without
+  overwriting saved grades.
+
+### Later
+
+- Organize courses by semester or term and support term GPA versus cumulative
+  GPA.
+- Add CSV import/export in addition to the existing complete JSON backup format.
+- Investigate assisted syllabus or screenshot import, with a review step before
+  any extracted data is saved. Imported values should never silently change a
+  grading policy.
+
+Before implementing automated imports, prioritize accessible editing,
+keyboard-friendly workflows, clear validation messages, and migration tests for
+saved-data compatibility. These are foundational for safely adding more
+powerful features.
 
 ## Data safety
 
@@ -16,64 +60,99 @@ Use the **Export** button on the Courses screen to save a portable JSON copy of
 your grade data. **Import** validates the selected JSON file and asks for
 confirmation before replacing the current courses.
 
-The app also creates timestamped backups before each local save and keeps the
-10 most recent backups alongside its local data file.
+The app saves to its Electron user-data directory. Before each local save it
+creates a timestamped backup and keeps the 10 most recent backups alongside the
+local data file. If the saved file is invalid, the original is moved aside for
+recovery and the app reports the load failure rather than silently discarding
+the data.
 
-## GPA grading policies
+## Grading and GPA behavior
 
-The Courses screen includes a default grading policy made from ordered
-percentage thresholds, letter labels, and grade-point values. This supports
-schools with or without plus/minus grades and lets you use institution-specific
-thresholds. A course can override the default policy, and its credits determine
-its weight in the overall GPA. Courses without a completed grade or positive
-credits are shown as excluded instead of being treated as zero.
+The default grading policy is made from ordered percentage thresholds, letter
+labels, and grade-point values. It supports schools with or without plus/minus
+grades and can be customized to match an institution's policy. A course can
+override the default policy.
 
 In weighted mode, categories with no scored assignments are excluded until they
 have scores. The remaining scored categories are renormalized, and the course
-screen shows the configured and active weight totals when they differ.
+screen shows the configured and active weight totals when they differ. In
+points mode, all scored assignment points are totaled directly. A configured
+drop-lowest count only removes scored assignments when enough scores remain.
 
-## Things to Address Before Shipping
+Courses contribute to the overall GPA only when they have a completed grade and
+positive credits. Excluded courses are shown explicitly rather than being
+treated as zero.
 
-- Obtain a Windows code-signing certificate
-- Create and publish installers
+## Development
 
-## Steps to Get Started with Development
+### Prerequisites
 
-1. Make sure node.js and git are installed on your device
-2. Clone the repository to your desired location
-3. `npm install`
-4. `npm start`
+- Node.js 24 or a compatible current Node.js release
+- Git
+- Windows for running the packaged desktop application
+
+### Run locally
+
+1. Clone the repository and open its directory.
+2. Install dependencies:
+
+   ```sh
+   npm install
+   ```
+
+3. Start the app:
+
+   ```sh
+   npm start
+   ```
+
+### Checks
+
+Run the same checks used by GitHub Actions:
+
+```sh
+npm test
+npm run lint
+npm run format:check
+```
+
+Use `npm run format` to format supported project files. Calculation logic is
+kept in `calc.js`, saved-data validation in `data-schema.js`, Electron main and
+IPC behavior in `main.js` and `preload.js`, and browser UI behavior in
+`renderer.js`.
 
 ## Packaging
 
 Build a Windows installer with electron-builder:
 
-1. Run `npm install`
-2. Run `npm run dist`
-3. Find the installer in the `release` folder
+```sh
+npm run dist
+```
 
-Use `npm run dist:dir` to create an unpacked build for local testing without
-creating an installer.
+The installer is written to the `release` directory. To create an unpacked
+build for local testing without an installer, run:
 
-## Checks
+```sh
+npm run dist:dir
+```
 
-- `npm test` runs calculation, saved-data validation, and persistence tests
-- `npm run lint` checks JavaScript with ESLint
-- `npm run format:check` checks formatting with Prettier
-- `npm run format` formats supported project files
+Before publishing releases, obtain a Windows code-signing certificate and
+decide how installers will be distributed and updated.
 
-These checks also run in GitHub Actions for pushes and pull requests.
+## Project guidance
 
-## Copilot customization
-
-Repository-specific Copilot guidance is stored in
+Repository-specific Copilot guidance is in
 [`.github/copilot-instructions.md`](.github/copilot-instructions.md). A
 read-only [CollegeGradez reviewer agent](.github/agents/collegegradez-reviewer.agent.md)
-is also available for focused diff reviews covering calculations, saved-data
+is available for focused diff reviews covering calculations, saved-data
 compatibility, Electron boundaries, and responsive UI behavior.
 
-## How to Update Packages
+## License
 
-Latest compatible versions: `npm update`  
-For security fixes: `npm audit fix`  
-With breaking changes (probably don't do this): `npm audit fix --force`
+CollegeGradez is released under the MIT License.
+
+## Package maintenance
+
+Use `npm update` to update compatible dependencies. Review the resulting
+lockfile and run the checks above. Use `npm audit fix` for applicable security
+updates; review breaking changes before using `npm audit fix --force`.
