@@ -6,8 +6,6 @@ A college grade calculator that is hopefully better than a spreadsheet
 
 - Add undo and redo features
 - Current grade and the grade needed on remaining work to hit a target
-- Credit-weighted GPA using customizable numeric-to-letter and letter-to-point
-  grading policies
 - Dragging to reorder courses, assignments, etc.
 - Dynamic syllabus ingestion to automatically set grading policies
 - One-click grade import from a screenshot
@@ -30,9 +28,9 @@ thresholds. A course can override the default policy, and its credits determine
 its weight in the overall GPA. Courses without a completed grade or positive
 credits are shown as excluded instead of being treated as zero.
 
-## Issues to Fix
-
-- None for now!
+In weighted mode, categories with no scored assignments are excluded until they
+have scores. The remaining scored categories are renormalized, and the course
+screen shows the configured and active weight totals when they differ.
 
 ## Things to Address Before Shipping
 
@@ -59,10 +57,12 @@ creating an installer.
 
 ## Checks
 
-- `npm test` runs the calculation and saved-data validation tests
+- `npm test` runs calculation, saved-data validation, and persistence tests
 - `npm run lint` checks JavaScript with ESLint
 - `npm run format:check` checks formatting with Prettier
 - `npm run format` formats supported project files
+
+These checks also run in GitHub Actions for pushes and pull requests.
 
 ## Copilot customization
 

@@ -22,23 +22,12 @@ let data = { courses: [] };
 let lastSavedData = { courses: [] };
 let currentCourseId = null;
 let dialogResolver = null;
+let previouslyFocusedElement = null;
 
 const defaultGradingPolicy = () => cloneData(Calc.DEFAULT_GRADING_POLICY);
 
 function cloneData(value) {
   return structuredClone(value);
-}
-
-if (!window.api) {
-  let memory = { courses: [] };
-  window.api = {
-    load: async () => memory,
-    save: async (next) => {
-      memory = next;
-    },
-    export: async () => false,
-    import: async () => null,
-  };
 }
 
 function uid() {
@@ -93,10 +82,16 @@ async function persist() {
 
 function closeDialog(result) {
   dialogEl.classList.add("hidden");
+  dialogEl.setAttribute("aria-hidden", "true");
   const resolve = dialogResolver;
   dialogResolver = null;
+  const focusTarget = previouslyFocusedElement;
+  previouslyFocusedElement = null;
   if (resolve) {
     resolve(result);
+  }
+  if (focusTarget && typeof focusTarget.focus === "function") {
+    focusTarget.focus();
   }
 }
 
@@ -108,12 +103,14 @@ function openDialog({
 }) {
   return new Promise((resolve) => {
     dialogResolver = resolve;
+    previouslyFocusedElement = document.activeElement;
     dialogMessage.textContent = message;
     dialogInput.classList.toggle("hidden", !showInput);
     dialogInput.value = showInput ? defaultValue : "";
     dialogOk.textContent = danger ? "Delete" : "OK";
     dialogOk.classList.toggle("danger", danger);
     dialogEl.classList.remove("hidden");
+    dialogEl.setAttribute("aria-hidden", "false");
     if (showInput) {
       dialogInput.focus();
       dialogInput.select();
@@ -147,6 +144,23 @@ dialogCancel.addEventListener("click", () => closeDialog(null));
 dialogEl.addEventListener("click", (event) => {
   if (event.target === dialogEl) {
     closeDialog(null);
+  }
+});
+dialogEl.addEventListener("keydown", (event) => {
+  if (event.key !== "Tab") {
+    return;
+  }
+  const focusable = [dialogInput, dialogCancel, dialogOk].filter(
+    (element) => !element.classList.contains("hidden") && !element.disabled,
+  );
+  const first = focusable[0];
+  const last = focusable[focusable.length - 1];
+  if (event.shiftKey && document.activeElement === first) {
+    event.preventDefault();
+    last.focus();
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault();
+    first.focus();
   }
 });
 dialogInput.addEventListener("keydown", (event) => {
@@ -201,9 +215,22 @@ function renderGradeSummary(course) {
       return `<li><span>${escapeHtml(cat.name || "Untitled")}${extra}${dropped}</span><span>${formatPercent(cat.percent)}</span></li>`;
     })
     .join("");
+  const configuredWeight = course.categories.reduce(
+    (sum, category) => sum + (Number(category.weight) || 0),
+    0,
+  );
+  const activeWeight = grade.byCategory
+    .filter((category) => category.hasScored)
+    .reduce((sum, category) => sum + (Number(category.weight) || 0), 0);
+  const weightedHelp =
+    course.gradingMode === "weighted" &&
+    (Math.abs(configuredWeight - 100) > 0.01 || activeWeight < configuredWeight)
+      ? `<p class="panel-help grade-weight-help">Weighted grades renormalize across categories with scored assignments. Configured weights total ${formatPoints(configuredWeight)}%; active scored categories total ${formatPoints(activeWeight)}%.</p>`
+      : "";
 
   gradeSummary.innerHTML = `
     <p class="overall">Current Grade: ${overallLabel}</p>
+    ${weightedHelp}
     <ul>${categoryLines || "<li><span>No categories yet</span><span></span></li>"}</ul>
   `;
 }
@@ -731,16 +758,23 @@ async function addAssignment(categoryId) {
 }
 
 async function init() {
+  if (!window.api) {
+    document
+      .querySelectorAll("button, input")
+      .forEach((element) => (element.disabled = true));
+    showAppError(
+      "The desktop data bridge is unavailable. Restart CollegeGradez or reinstall the application.",
+    );
+    return;
+  }
   try {
     data = await window.api.load();
-    lastSavedData = cloneData(data);
   } catch (error) {
     console.error("Failed to load grades:", error);
     showAppError(
       "Your saved grades could not be loaded. The original data was preserved.",
     );
-    data = { courses: [] };
-    lastSavedData = cloneData(data);
+    data = { courses: [], gradingPolicy: defaultGradingPolicy() };
   }
   if (!data || !Array.isArray(data.courses)) {
     data = { courses: [] };
@@ -748,6 +782,7 @@ async function init() {
   if (!data.gradingPolicy) {
     data.gradingPolicy = defaultGradingPolicy();
   }
+  lastSavedData = cloneData(data);
   showHome();
 }
 

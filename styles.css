@@ -431,6 +431,10 @@ select {
   margin: 0 0 12px;
 }
 
+.grade-weight-help {
+  margin-top: -4px;
+}
+
 .summary ul {
   margin: 0;
   padding: 0;
