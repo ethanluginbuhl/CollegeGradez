@@ -5,7 +5,6 @@ const homeEmpty = document.getElementById("home-empty");
 const courseNameInput = document.getElementById("course-name");
 const gradeSummary = document.getElementById("grade-summary");
 const courseGpaCard = document.getElementById("course-gpa-card");
-const overallGpaCard = document.getElementById("overall-gpa-card");
 const overviewGpaCard = document.getElementById("overview-gpa-card");
 const defaultPolicyEditor = document.getElementById("default-policy-editor");
 const categoryRows = document.getElementById("category-rows");
@@ -207,9 +206,6 @@ function renderGradeSummary(course) {
     <p class="overall">Current Grade: ${overallLabel}</p>
     <ul>${categoryLines || "<li><span>No categories yet</span><span></span></li>"}</ul>
   `;
-  if (overallGpaCard) {
-    renderOverallGpa();
-  }
 }
 
 function renderPolicyEditor(container, policy, onChange) {
@@ -266,6 +262,16 @@ function renderPolicyEditor(container, policy, onChange) {
         band.points = parseOptionalNumber(
           row.querySelector(".policy-points").value,
         );
+        if (input.classList.contains("policy-min")) {
+          const reordered = Calc.reorderPolicyBands(policy);
+          if (!reordered) {
+            showPolicyError(
+              "Minimum percentages must be unique and between 0% and 100%.",
+            );
+            return;
+          }
+          policy.bands.splice(0, policy.bands.length, ...reordered);
+        }
         if (!validPolicy()) {
           showPolicyError(
             "Use descending minimum percentages ending with a 0% grade, and enter non-negative points.",
@@ -363,7 +369,7 @@ function renderCourseGpa(course) {
   }
 }
 
-function renderOverallGpa(card = overallGpaCard) {
+function renderOverallGpa(card = overviewGpaCard) {
   const overall = Calc.calculateGpa(data);
   const rows = overall.courses
     .map(
@@ -448,7 +454,6 @@ function renderCourse() {
   ).checked = true;
 
   renderCourseGpa(course);
-  renderOverallGpa();
   renderGradeSummary(course);
 
   categoriesEmpty.classList.toggle("hidden", course.categories.length > 0);
@@ -515,10 +520,10 @@ function renderCourse() {
   function renderAssignmentRow(assignment, tableBody) {
     const row = document.createElement("tr");
     row.innerHTML = `
-      <td><input type="text" class="asg-name" maxlength="120" /></td>
-      <td><input type="number" class="asg-earned" min="0" step="0.01" /></td>
-      <td><input type="number" class="asg-possible" min="0" step="0.01" /></td>
-      <td><button type="button" class="danger icon">Remove</button></td>
+      <td data-label="Name"><input type="text" class="asg-name" maxlength="120" /></td>
+      <td data-label="Earned"><input type="number" class="asg-earned" min="0" step="0.01" /></td>
+      <td data-label="Possible"><input type="number" class="asg-possible" min="0" step="0.01" /></td>
+      <td data-label=""><button type="button" class="danger icon">Remove</button></td>
     `;
     const nameInput = row.querySelector(".asg-name");
     const earnedInput = row.querySelector(".asg-earned");
@@ -582,7 +587,7 @@ function renderCourse() {
       group.appendChild(empty);
     } else {
       const table = document.createElement("table");
-      table.className = "data-table";
+      table.className = "data-table assignment-table";
       table.innerHTML = `
         <thead>
           <tr>

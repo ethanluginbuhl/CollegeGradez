@@ -142,6 +142,30 @@
     return policy.bands.find((band) => percent >= band.minPercent) || null;
   }
 
+  function reorderPolicyBands(policy) {
+    if (
+      !policy ||
+      !Array.isArray(policy.bands) ||
+      policy.bands.some(
+        (band) =>
+          !isNumber(band.minPercent) ||
+          band.minPercent < 0 ||
+          band.minPercent > 100,
+      )
+    ) {
+      return null;
+    }
+    const reordered = [...policy.bands].sort(
+      (left, right) => right.minPercent - left.minPercent,
+    );
+    for (let index = 1; index < reordered.length; index += 1) {
+      if (reordered[index].minPercent === reordered[index - 1].minPercent) {
+        return null;
+      }
+    }
+    return reordered;
+  }
+
   function courseGpa(course, defaultPolicy) {
     const grade = courseGrade(course);
     const band = letterGrade(
@@ -201,6 +225,7 @@
     categoryResult,
     courseGrade,
     letterGrade,
+    reorderPolicyBands,
     courseGpa,
     calculateGpa,
   };

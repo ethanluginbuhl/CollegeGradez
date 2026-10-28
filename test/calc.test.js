@@ -5,6 +5,7 @@ const {
   courseGrade,
   dropLowest,
   letterGrade,
+  reorderPolicyBands,
 } = require("../calc.js");
 
 test("calculates weighted grades using scored categories", () => {
@@ -63,6 +64,42 @@ test("maps percentages using a custom ordered grading policy", () => {
   assert.equal(letterGrade(95, policy).letter, "A");
   assert.equal(letterGrade(84, policy).points, 3);
   assert.equal(letterGrade(50, policy).letter, "F");
+});
+
+test("reorders policy bands by descending minimum percentage", () => {
+  const policy = {
+    bands: [
+      { letter: "A", minPercent: 90, points: 4 },
+      { letter: "F", minPercent: 0, points: 0 },
+      { letter: "A+", minPercent: 97, points: 4 },
+    ],
+  };
+
+  assert.deepEqual(
+    reorderPolicyBands(policy).map((band) => band.letter),
+    ["A+", "A", "F"],
+  );
+});
+
+test("rejects duplicate or invalid policy thresholds when reordering", () => {
+  assert.equal(
+    reorderPolicyBands({
+      bands: [
+        { letter: "A", minPercent: 90, points: 4 },
+        { letter: "B", minPercent: 90, points: 3 },
+      ],
+    }),
+    null,
+  );
+  assert.equal(
+    reorderPolicyBands({
+      bands: [
+        { letter: "A", minPercent: 101, points: 4 },
+        { letter: "F", minPercent: 0, points: 0 },
+      ],
+    }),
+    null,
+  );
 });
 
 test("calculates a credit-weighted GPA and excludes incomplete courses", () => {
