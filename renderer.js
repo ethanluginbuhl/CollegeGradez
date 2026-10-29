@@ -17,6 +17,21 @@ const dialogInput = document.getElementById("dialog-input");
 const dialogOk = document.getElementById("dialog-ok");
 const dialogCancel = document.getElementById("dialog-cancel");
 const appError = document.getElementById("app-error");
+const appNotification = window.NotificationUI || {
+  clearAppNotification(element) {
+    if (!element) {
+      return;
+    }
+    element.classList.add("hidden");
+  },
+  showAppNotification(element, message) {
+    if (!element) {
+      return;
+    }
+    element.textContent = message;
+    element.classList.remove("hidden");
+  },
+};
 
 let data = { courses: [] };
 let lastSavedData = { courses: [] };
@@ -62,7 +77,7 @@ async function persist() {
   try {
     await window.api.save(data);
     lastSavedData = cloneData(data);
-    appError.classList.add("hidden");
+    appNotification.clearAppNotification(appError);
   } catch (error) {
     console.error("Failed to save grades:", error);
     data = cloneData(lastSavedData);
@@ -129,8 +144,11 @@ function askConfirm(message, danger = true) {
 }
 
 function showAppError(message) {
-  appError.textContent = message;
-  appError.classList.remove("hidden");
+  appNotification.showAppNotification(appError, message, "error");
+}
+
+function showAppSuccess(message) {
+  appNotification.showAppNotification(appError, message, "success");
 }
 
 dialogOk.addEventListener("click", () => {
@@ -792,8 +810,7 @@ document.getElementById("export-data").addEventListener("click", async () => {
   try {
     const exported = await window.api.export(data);
     if (exported) {
-      appError.textContent = "Grade data exported successfully.";
-      appError.classList.remove("hidden");
+      showAppSuccess("Grade data exported successfully.");
     }
   } catch (error) {
     console.error("Failed to export grades:", error);
@@ -829,8 +846,7 @@ document.getElementById("import-data").addEventListener("click", async () => {
     await persist();
     currentCourseId = null;
     showHome();
-    appError.textContent = "Grade data imported successfully.";
-    appError.classList.remove("hidden");
+    showAppSuccess("Grade data imported successfully.");
   } catch {
     currentCourseId = null;
   }

@@ -19,7 +19,13 @@
           spreadsheet.
         </p>
       </header>
-      <p id="app-error" class="app-error hidden" role="alert"></p>
+      <p
+        id="app-error"
+        class="app-error hidden"
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+      ></p>
 
       <main id="view-home" class="view">
         <div class="view-header">
@@ -146,6 +152,7 @@
     </div>
 
     <script src="calc.js"></script>
+    <script src="notification.js"></script>
     <script src="renderer.js"></script>
   </body>
 </html>

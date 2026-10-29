@@ -107,12 +107,21 @@ button.icon {
 }
 
 .app-error {
-  background: #f8ecec;
-  border: 1px solid #d9aaaa;
   border-radius: 8px;
-  color: var(--danger-hover);
   margin: 18px 0 0;
   padding: 10px 12px;
+}
+
+.app-error.app-notice-error {
+  background: #f8ecec;
+  border: 1px solid #d9aaaa;
+  color: var(--danger-hover);
+}
+
+.app-error.app-notice-success {
+  background: #e8f5e8;
+  border: 1px solid #9ecb9e;
+  color: #1e5c1e;
 }
 
 .course-list {

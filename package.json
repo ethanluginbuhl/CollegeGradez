@@ -29,6 +29,7 @@
       "data-schema.js",
       "index.html",
       "main.js",
+      "notification.js",
       "package.json",
       "preload.js",
       "renderer.js",
