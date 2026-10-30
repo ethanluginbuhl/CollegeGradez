@@ -54,7 +54,8 @@ jobs:
           gh release view $tag --repo $repo *> $null
           if ($LASTEXITCODE -eq 0) {
             gh release upload $tag $assets --repo $repo --clobber
-            gh release edit $tag --repo $repo --prerelease
+            gh release edit $tag --repo $repo `
+              --title "CollegeGradez $tag" --prerelease
           } else {
             gh release create $tag $assets --repo $repo `
               --title "CollegeGradez $tag" --prerelease --generate-notes
