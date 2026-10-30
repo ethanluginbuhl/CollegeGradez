@@ -20,6 +20,7 @@
   "build": {
     "appId": "com.ethanluginbuhl.collegegradez",
     "productName": "CollegeGradez",
+    "artifactName": "${productName}-Setup-${version}.${ext}",
     "directories": {
       "output": "release"
     },
@@ -45,6 +46,12 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "ethanluginbuhl",
+      "repo": "CollegeGradez",
+      "releaseType": "prerelease"
     }
   },
   "license": "MIT",
