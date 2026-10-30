@@ -166,12 +166,22 @@ build for local testing without an installer, run:
 npm run dist:dir
 ```
 
-The release workflow is currently manual. Before publishing a release:
+Releases are published automatically by GitHub Actions when a version tag is
+pushed. Before publishing a release:
 
 1. Update the version in `package.json` and `package-lock.json`.
-2. Run the checks above and test the installer on a clean Windows machine.
-3. Create a version tag and GitHub release.
-4. Attach the installer and include known limitations in the release notes.
+2. Update the release notes or prepare the release description.
+3. Run the checks above and test the installer on a clean Windows machine.
+4. Create and push a matching version tag:
+
+   ```sh
+   git tag v0.2.0-beta.2
+   git push origin v0.2.0-beta.2
+   ```
+
+The workflow publishes the installer, blockmap, and `latest.yml` to a
+pre-release on GitHub. It only runs for version tags and verifies that the tag
+matches the version in `package.json`.
 
 Installers are not code-signed during the beta phase. Code signing and
 automatic updates may be added later.
