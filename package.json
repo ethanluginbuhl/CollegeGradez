@@ -1,6 +1,6 @@
 {
   "name": "collegegradez",
-  "version": "0.2.0-beta.1",
+  "version": "0.2.0-beta.2",
   "description": "A college grade calculator for students",
   "main": "main.js",
   "scripts": {
