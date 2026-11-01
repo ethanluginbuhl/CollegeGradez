@@ -20,6 +20,15 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--ink);
+  user-select: none;
+}
+
+input,
+textarea,
+select,
+[contenteditable="true"],
+[contenteditable=""] {
+  user-select: text;
 }
 
 #app {
