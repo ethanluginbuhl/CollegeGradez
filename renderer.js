@@ -307,8 +307,8 @@ function renderPolicyEditor(
     const row = document.createElement("tr");
     row.innerHTML = `
       <td><input type="text" class="policy-letter" maxlength="12"></td>
-      <td><input type="number" class="policy-min" min="0" max="100" step="0.1"></td>
-      ${showPoints ? '<td><input type="number" class="policy-points" min="0" step="0.01"></td>' : ""}
+      <td><input type="number" class="policy-min" min="0" max="100" step="1"></td>
+      ${showPoints ? '<td><input type="number" class="policy-points" min="0" step="0.05"></td>' : ""}
       <td><button type="button" class="danger icon remove-policy-band">Remove</button></td>
     `;
     row.querySelector(".policy-letter").value = band.letter;
@@ -553,7 +553,7 @@ function renderCourse() {
     const row = document.createElement("tr");
     row.innerHTML = `
       <td><input type="text" class="cat-name" maxlength="80" /></td>
-      <td class="weight-col"><input type="number" class="cat-weight" min="0" step="0.1" /></td>
+      <td class="weight-col"><input type="number" class="cat-weight" min="0" step="1" /></td>
       <td><input type="number" class="cat-drop" min="0" step="1" /></td>
       <td><button type="button" class="danger icon">Remove</button></td>
     `;
@@ -612,8 +612,8 @@ function renderCourse() {
     const row = document.createElement("tr");
     row.innerHTML = `
       <td data-label="Name"><input type="text" class="asg-name" maxlength="120" /></td>
-      <td data-label="Earned"><input type="number" class="asg-earned" min="0" step="0.01" /></td>
-      <td data-label="Possible"><input type="number" class="asg-possible" min="0" step="0.01" /></td>
+      <td data-label="Earned"><input type="number" class="asg-earned" min="0" step="0.5" /></td>
+      <td data-label="Possible"><input type="number" class="asg-possible" min="0" step="0.5" /></td>
       <td data-label=""><button type="button" class="danger icon">Remove</button></td>
     `;
     const nameInput = row.querySelector(".asg-name");
