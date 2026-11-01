@@ -65,7 +65,7 @@
       categoryAssignments(category, assignments),
       category && category.dropLowest,
     );
-    const scored = remaining.filter(isComplete);
+    const scored = remaining.filter(isDroppable);
     const earned = scored.reduce((sum, item) => sum + item.earned, 0);
     const possible = scored.reduce((sum, item) => sum + item.possible, 0);
     const hasScored = remaining.some(isDroppable);
@@ -93,8 +93,17 @@
       course && course.gradingMode === "points" ? "points" : "weighted";
 
     if (mode === "points") {
-      const earned = byCategory.reduce((sum, cat) => sum + cat.earned, 0);
-      const possible = byCategory.reduce((sum, cat) => sum + cat.possible, 0);
+      const categorized = new Set(categories.map((category) => category.id));
+      const unassigned = assignments.filter(
+        (assignment) =>
+          !categorized.has(assignment.categoryId) && isDroppable(assignment),
+      );
+      const earned =
+        byCategory.reduce((sum, cat) => sum + cat.earned, 0) +
+        unassigned.reduce((sum, assignment) => sum + assignment.earned, 0);
+      const possible =
+        byCategory.reduce((sum, cat) => sum + cat.possible, 0) +
+        unassigned.reduce((sum, assignment) => sum + assignment.possible, 0);
       return {
         percent: possible > 0 ? (earned / possible) * 100 : null,
         earned,

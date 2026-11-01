@@ -42,6 +42,41 @@ test("calculates points grades from total earned and possible points", () => {
   assert.equal(result.possible, 70);
 });
 
+test("includes scored assignments left unassigned after category removal", () => {
+  const course = {
+    gradingMode: "points",
+    categories: [{ id: "remaining", weight: 100, dropLowest: 0 }],
+    assignments: [
+      { categoryId: "remaining", earned: 40, possible: 50 },
+      { categoryId: null, earned: 30, possible: 50 },
+      { categoryId: "deleted", earned: 20, possible: 20 },
+      { categoryId: null, earned: null, possible: 50 },
+    ],
+  };
+
+  const result = courseGrade(course);
+  assert.equal(result.earned, 90);
+  assert.equal(result.possible, 120);
+  assert.equal(result.percent, 75);
+});
+
+test("excludes incomplete and zero-point assignments from points-mode totals", () => {
+  const course = {
+    gradingMode: "points",
+    categories: [{ id: "all", weight: 100, dropLowest: 0 }],
+    assignments: [
+      { categoryId: "all", earned: 10, possible: 0 },
+      { categoryId: null, earned: 10, possible: null },
+      { categoryId: null, earned: null, possible: 10 },
+    ],
+  };
+
+  const result = courseGrade(course);
+  assert.equal(result.earned, 0);
+  assert.equal(result.possible, 0);
+  assert.equal(result.percent, null);
+});
+
 test("does not drop all scored assignments", () => {
   const assignments = [
     { earned: 5, possible: 10 },
