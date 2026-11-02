@@ -70,7 +70,8 @@
     "prettier": "3.9.10"
   },
   "allowScripts": {
-    "electron@45.0.0": true
+    "electron@45.0.0": true,
+    "electron-winstaller@5.4.0": true
   },
   "dependencies": {
     "electron-updater": "^6.8.11"
