@@ -29,3 +29,13 @@
 - Add or update focused tests before relying on a full-suite result.
 - If a validation command fails because of the environment, report the exact
   command and blocker rather than skipping it silently.
+
+## Review workflow
+
+- After implementation and relevant validation pass, and immediately before
+  committing or opening a pull request, recommend that the user run the
+  `CollegeGradez Diff Reviewer` agent.
+- Do not invoke the reviewer automatically after edits. The user should
+  explicitly start the review or select the review handoff.
+- Treat the diff reviewer as a second-pass review of the current diff, not a
+  replacement for deterministic tests, lint, formatting checks, or CI.
