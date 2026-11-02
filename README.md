@@ -19,8 +19,10 @@ The installers are currently unsigned, so Windows SmartScreen may display a
 warning. Verify that downloads come from this repository's releases and review
 the release notes before installing.
 
-CollegeGradez does not currently provide automatic updates. Download newer
-versions manually from the releases page.
+Packaged builds check the GitHub Releases page for updates once at startup.
+Available prerelease updates download in the background, and the app asks
+whether to restart when an update is ready. Updates are not checked while
+running the app locally with `npm start`.
 
 ## Privacy and data safety
 
@@ -183,8 +185,9 @@ The workflow publishes the installer, blockmap, and `latest.yml` to a
 pre-release on GitHub. It only runs for version tags and verifies that the tag
 matches the version in `package.json`.
 
-Installers are not code-signed during the beta phase. Code signing and
-automatic updates may be added later.
+Automatic updates are enabled for packaged prerelease builds. The installer
+and update packages are not code-signed during the beta phase, so Windows
+SmartScreen may still display a warning.
 
 ## Contributing
 
