@@ -29,3 +29,12 @@
 - Add or update focused tests before relying on a full-suite result.
 - If a validation command fails because of the environment, report the exact
   command and blocker rather than skipping it silently.
+
+## Review workflow
+
+- After meaningful code changes, and before committing or opening a pull
+  request, recommend that the user run the `CollegeGradez Reviewer` agent.
+- Do not invoke the reviewer automatically after edits. The user should
+  explicitly start the review or select the review handoff.
+- Treat the reviewer as a second-pass diff review, not a replacement for the
+  deterministic tests, lint, formatting checks, or CI workflow.

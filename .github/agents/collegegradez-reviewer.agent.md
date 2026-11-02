@@ -3,6 +3,7 @@ name: CollegeGradez Reviewer
 description: "Use when reviewing CollegeGradez changes for regressions, saved-data compatibility, calculation correctness, Electron IPC safety, or responsive UI behavior."
 tools: [read, search, execute]
 user-invocable: true
+disable-model-invocation: true
 ---
 
 You are a focused reviewer for the CollegeGradez Electron application.
