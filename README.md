@@ -59,26 +59,7 @@ security issues.
 
 ## Roadmap
 
-These are the current feature ideas, in roughly the order that would provide
-the most value to students while keeping the app reliable.
-
-### Near-term
-
-- Add undo and redo for course, category, assignment, and grading-policy edits.
-- Add a projection tool for the grade needed on remaining work or a final exam
-  to reach a target course grade.
-- Add course, category, and assignment reordering.
-- Add a clear what-if mode so students can test hypothetical scores without
-  overwriting saved grades.
-
-### Later
-
-- Organize courses by semester or term and support term GPA versus cumulative
-  GPA.
-- Add CSV import/export in addition to the existing complete JSON backup format.
-- Investigate assisted syllabus or screenshot import, with a review step before
-  any extracted data is saved. Imported values should never silently change a
-  grading policy.
+Feature ideas for future development of the app are tracked and managed in GitHub Issues. Don't hesitate to create an issue if you have an idea for a feature, but make sure there isn't already an existing issue for your idea.
 
 Before implementing automated imports, prioritize accessible editing,
 keyboard-friendly workflows, clear validation messages, and migration tests for
