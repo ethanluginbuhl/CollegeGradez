@@ -1,6 +1,6 @@
 ---
-name: CollegeGradez Reviewer
-description: "Use when reviewing CollegeGradez changes for regressions, saved-data compatibility, calculation correctness, Electron IPC safety, or responsive UI behavior."
+name: CollegeGradez Diff Reviewer
+description: "Use when reviewing the current CollegeGradez diff for regressions, saved-data compatibility, calculation correctness, Electron IPC safety, responsive UI behavior, or packaging issues."
 tools: [read, search, execute]
 user-invocable: true
 disable-model-invocation: true

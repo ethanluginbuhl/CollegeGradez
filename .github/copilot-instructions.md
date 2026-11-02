@@ -32,9 +32,10 @@
 
 ## Review workflow
 
-- After meaningful code changes, and before committing or opening a pull
-  request, recommend that the user run the `CollegeGradez Reviewer` agent.
+- After implementation and relevant validation pass, and immediately before
+  committing or opening a pull request, recommend that the user run the
+  `CollegeGradez Diff Reviewer` agent.
 - Do not invoke the reviewer automatically after edits. The user should
   explicitly start the review or select the review handoff.
-- Treat the reviewer as a second-pass diff review, not a replacement for the
-  deterministic tests, lint, formatting checks, or CI workflow.
+- Treat the diff reviewer as a second-pass review of the current diff, not a
+  replacement for deterministic tests, lint, formatting checks, or CI.
