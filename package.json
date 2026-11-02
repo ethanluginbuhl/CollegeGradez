@@ -35,7 +35,8 @@
       "package.json",
       "preload.js",
       "renderer.js",
-      "styles.css"
+      "styles.css",
+      "update-manager.js"
     ],
     "win": {
       "target": "nsis",
@@ -70,5 +71,8 @@
   },
   "allowScripts": {
     "electron@45.0.0": true
+  },
+  "dependencies": {
+    "electron-updater": "^6.8.11"
   }
 }

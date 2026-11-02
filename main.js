@@ -1,6 +1,8 @@
 const { app, BrowserWindow, ipcMain, dialog } = require("electron");
+const { autoUpdater } = require("electron-updater");
 const path = require("path");
 const { validateData } = require("./data-schema");
+const { configureAutoUpdater } = require("./update-manager");
 const {
   readData,
   writeData,
@@ -62,6 +64,12 @@ app.whenReady().then(() => {
   });
 
   createWindow();
+  configureAutoUpdater({
+    app,
+    autoUpdater,
+    dialog,
+    getWindow: () => mainWindow,
+  });
 
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) {
