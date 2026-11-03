@@ -291,14 +291,15 @@ function renderPolicyEditor(
     }
     return policy.bands.length > 0 && previous === 0;
   }
-  function pointsForLetter(letter) {
+  function pointsForLetter(letter, fallback = 0) {
     return (
-      pointsPolicy.bands.find((band) => band.letter === letter)?.points ?? 0
+      pointsPolicy.bands.find((band) => band.letter === letter)?.points ??
+      fallback
     );
   }
   if (!showPoints) {
     for (const band of policy.bands) {
-      band.points = pointsForLetter(band.letter);
+      band.points = pointsForLetter(band.letter, band.points);
     }
   }
   const body = container.querySelector("tbody");
@@ -329,7 +330,7 @@ function renderPolicyEditor(
             row.querySelector(".policy-points").value,
           );
         } else {
-          band.points = pointsForLetter(band.letter);
+          band.points = pointsForLetter(band.letter, band.points);
         }
         if (input.classList.contains("policy-min")) {
           const reordered = Calc.reorderPolicyBands(policy);
@@ -414,7 +415,7 @@ function renderCourseGpa(course) {
   const result = Calc.courseGpa(course, data.gradingPolicy);
   courseGpaCard.innerHTML = `
     <h3>Course GPA</h3>
-    <p class="gpa-value">${result.letter || "—"} <span>${formatGpa(result.points)}</span></p>
+    <p class="gpa-value">${escapeHtml(result.letter || "—")} <span>${formatGpa(result.points)}</span></p>
     <label>
       Credits
       <input id="course-credits" type="number" min="0" step="0.5">
@@ -450,7 +451,7 @@ function renderCourseGpa(course) {
         await persist();
         const result = Calc.courseGpa(course, data.gradingPolicy);
         courseGpaCard.querySelector(".gpa-value").innerHTML =
-          `${result.letter || "—"} <span>${formatGpa(result.points)}</span>`;
+          `${escapeHtml(result.letter || "—")} <span>${formatGpa(result.points)}</span>`;
         courseGpaCard.querySelector(".panel-help").textContent = result.eligible
           ? "Included in overall GPA."
           : "Complete the course grade and enter positive credits to include it.";

@@ -126,6 +126,29 @@ test("uses university GPA points for course-specific thresholds", () => {
   assert.equal(courseGpa(course, universityPolicy).points, 3);
 });
 
+test("preserves points for custom course-policy labels", () => {
+  const course = {
+    gradingMode: "points",
+    gradingPolicy: {
+      bands: [
+        { letter: "Pass", minPercent: 60, points: 4 },
+        { letter: "Fail", minPercent: 0, points: 0 },
+      ],
+    },
+    categories: [{ id: "all", weight: 100, dropLowest: 0 }],
+    assignments: [{ categoryId: "all", earned: 80, possible: 100 }],
+  };
+  const universityPolicy = {
+    bands: [
+      { letter: "A", minPercent: 93, points: 4 },
+      { letter: "F", minPercent: 0, points: 0 },
+    ],
+  };
+
+  assert.equal(courseGpa(course, universityPolicy).letter, "Pass");
+  assert.equal(courseGpa(course, universityPolicy).points, 4);
+});
+
 test("reorders policy bands by descending minimum percentage", () => {
   const policy = {
     bands: [

@@ -7,7 +7,7 @@ CollegeGradez is a Windows desktop grade tracker and GPA calculator built with
 Electron. It is intended to be a practical, local-first alternative to
 maintaining grades in a spreadsheet.
 
-> **Status:** Beta (`0.2.0-beta.1`). The application is usable, but is still in
+> **Status:** Beta (`0.2.0-beta.2`). The application is usable, but is still in
 > the beta phase as development continues. Back up your data before testing
 > beta releases.
 
@@ -188,7 +188,7 @@ priority.
 
 Repository-specific Copilot guidance is in
 [`.github/copilot-instructions.md`](.github/copilot-instructions.md). A
-read-only [CollegeGradez reviewer agent](.github/agents/collegegradez-reviewer.agent.md)
+read-only [CollegeGradez reviewer agent](.github/agents/collegegradez-diff-reviewer.agent.md)
 is available for focused diff reviews covering calculations, saved-data
 compatibility, Electron boundaries, and responsive UI behavior.
 
