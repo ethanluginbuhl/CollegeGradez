@@ -17,7 +17,6 @@ const dialogInput = document.getElementById("dialog-input");
 const dialogOk = document.getElementById("dialog-ok");
 const dialogCancel = document.getElementById("dialog-cancel");
 const appError = document.getElementById("app-error");
-const saveStatus = document.getElementById("save-status");
 const undoNotice = document.getElementById("undo-notice");
 const undoMessage = document.getElementById("undo-message");
 const undoCourseButton = document.getElementById("undo-course");
@@ -80,14 +79,10 @@ function currentCourse() {
 
 async function persist() {
   hideUndoNotice();
-  saveStatus.textContent = "Saving locally…";
-  saveStatus.className = "save-status saving";
   try {
     await window.api.save(data);
     lastSavedData = cloneData(data);
     appNotification.clearAppNotification(appError);
-    saveStatus.textContent = "Saved locally";
-    saveStatus.className = "save-status saved";
   } catch (error) {
     console.error("Failed to save grades:", error);
     data = cloneData(lastSavedData);
@@ -96,8 +91,6 @@ async function persist() {
     } else {
       renderCourse();
     }
-    saveStatus.textContent = "Save failed";
-    saveStatus.className = "save-status failed";
     showAppError(
       error && error.message
         ? `Your change could not be saved: ${error.message}`
@@ -306,7 +299,7 @@ function renderPolicyEditor(
       start at 0% so every grade has a result.
     </p>
     <table class="data-table policy-table">
-      <thead><tr><th>Letter</th><th>Minimum %</th>${showPoints ? "<th>Points</th>" : ""}<th></th></tr></thead>
+      <thead><tr><th>Letter</th><th>Min %</th>${showPoints ? "<th>Points</th>" : ""}<th></th></tr></thead>
       <tbody></tbody>
     </table>
     <button type="button" class="ghost add-policy-band">Add Grade</button>
@@ -901,7 +894,6 @@ async function init() {
     data.gradingPolicy = defaultGradingPolicy();
   }
   lastSavedData = cloneData(data);
-  saveStatus.textContent = "Saved locally";
   showHome();
 }
 

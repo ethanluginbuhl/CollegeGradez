@@ -1,15 +1,15 @@
 :root {
-  --bg: #f5f7f8;
-  --paper: #ffffff;
-  --ink: #17252d;
-  --muted: #52616b;
-  --line: #d7e0e4;
-  --accent: #075985;
-  --accent-hover: #064566;
-  --danger: #a33b3b;
-  --danger-hover: #822e2e;
+  --bg: #f2f5f7;
+  --paper: #fcfdfd;
+  --ink: #263744;
+  --muted: #5b6973;
+  --line: #d5dfe5;
+  --accent: #315a7d;
+  --accent-hover: #274965;
+  --danger: #9b4a45;
+  --danger-hover: #7d3c38;
   --white: #ffffff;
-  --surface-subtle: #e8f1f4;
+  --surface-subtle: #eaf0f4;
   --surface-error: #f8ecec;
   --line-error: #d9aaaa;
   --surface-success: #e8f5e8;
@@ -18,7 +18,7 @@
   --radius-sm: 6px;
   --radius-md: 8px;
   --radius-lg: 10px;
-  --shadow: 0 2px 10px rgba(28, 45, 54, 0.07);
+  --shadow: 0 2px 10px rgba(38, 55, 68, 0.07);
   font-family: "Segoe UI", Tahoma, sans-serif;
 }
 
@@ -34,7 +34,7 @@ body {
 }
 
 ::selection {
-  background: #b7d7e5;
+  background: #cbd9e2;
   color: var(--ink);
 }
 
@@ -172,21 +172,6 @@ button.icon {
   background: var(--surface-success);
   border: 1px solid var(--line-success);
   color: var(--success-ink);
-}
-
-.save-status {
-  color: var(--muted);
-  font-size: 0.82rem;
-  margin: 14px 0 -4px;
-}
-
-.save-status.saving {
-  color: var(--accent);
-}
-
-.save-status.failed {
-  color: var(--danger-hover);
-  font-weight: 600;
 }
 
 .undo-notice {
@@ -491,6 +476,7 @@ select {
   color: var(--muted);
   font-weight: 600;
   padding: 0 8px 9px 0;
+  white-space: nowrap;
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
