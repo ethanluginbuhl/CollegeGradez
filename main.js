@@ -17,7 +17,7 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     width: 980,
     height: 720,
-    minWidth: 720,
+    minWidth: 480,
     minHeight: 520,
     title: "CollegeGradez",
     icon: path.join(__dirname, "assets/icon.png"),

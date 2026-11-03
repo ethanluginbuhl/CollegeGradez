@@ -17,6 +17,10 @@ const dialogInput = document.getElementById("dialog-input");
 const dialogOk = document.getElementById("dialog-ok");
 const dialogCancel = document.getElementById("dialog-cancel");
 const appError = document.getElementById("app-error");
+const saveStatus = document.getElementById("save-status");
+const undoNotice = document.getElementById("undo-notice");
+const undoMessage = document.getElementById("undo-message");
+const undoCourseButton = document.getElementById("undo-course");
 const appNotification = window.NotificationUI || {
   clearAppNotification(element) {
     if (!element) {
@@ -38,6 +42,7 @@ let lastSavedData = { courses: [] };
 let currentCourseId = null;
 let dialogResolver = null;
 let previouslyFocusedElement = null;
+let undoState = null;
 
 const defaultGradingPolicy = () => cloneData(Calc.DEFAULT_GRADING_POLICY);
 
@@ -74,10 +79,15 @@ function currentCourse() {
 }
 
 async function persist() {
+  hideUndoNotice();
+  saveStatus.textContent = "Saving locally…";
+  saveStatus.className = "save-status saving";
   try {
     await window.api.save(data);
     lastSavedData = cloneData(data);
     appNotification.clearAppNotification(appError);
+    saveStatus.textContent = "Saved locally";
+    saveStatus.className = "save-status saved";
   } catch (error) {
     console.error("Failed to save grades:", error);
     data = cloneData(lastSavedData);
@@ -86,12 +96,41 @@ async function persist() {
     } else {
       renderCourse();
     }
+    saveStatus.textContent = "Save failed";
+    saveStatus.className = "save-status failed";
     showAppError(
       error && error.message
         ? `Your change could not be saved: ${error.message}`
         : "Your change could not be saved. Check available disk space and try again.",
     );
     throw error;
+  }
+}
+
+function hideUndoNotice() {
+  undoState = null;
+  undoNotice.classList.add("hidden");
+}
+
+function showUndoNotice(courseName, previousData) {
+  undoState = previousData;
+  undoMessage.textContent = `${courseName} deleted.`;
+  undoNotice.classList.remove("hidden");
+}
+
+async function undoDelete() {
+  if (!undoState) {
+    return;
+  }
+  const restoredData = undoState;
+  hideUndoNotice();
+  data = cloneData(restoredData);
+  try {
+    await persist();
+    renderHome();
+    showAppSuccess("Course restored.");
+  } catch {
+    renderHome();
   }
 }
 
@@ -122,6 +161,7 @@ function openDialog({
     dialogMessage.textContent = message;
     dialogInput.classList.toggle("hidden", !showInput);
     dialogInput.value = showInput ? defaultValue : "";
+    dialogInput.setAttribute("aria-label", message);
     dialogOk.textContent = danger ? "Delete" : "OK";
     dialogOk.classList.toggle("danger", danger);
     dialogEl.classList.remove("hidden");
@@ -261,6 +301,10 @@ function renderPolicyEditor(
 ) {
   const editorOptions = { showPoints, pointsPolicy };
   container.innerHTML = `
+    <p class="panel-help policy-help">
+      Add bands from highest to lowest minimum percentage. The last band must
+      start at 0% so every grade has a result.
+    </p>
     <table class="data-table policy-table">
       <thead><tr><th>Letter</th><th>Minimum %</th>${showPoints ? "<th>Points</th>" : ""}<th></th></tr></thead>
       <tbody></tbody>
@@ -307,10 +351,10 @@ function renderPolicyEditor(
   for (const [index, band] of policy.bands.entries()) {
     const row = document.createElement("tr");
     row.innerHTML = `
-      <td><input type="text" class="policy-letter" maxlength="12"></td>
-      <td><input type="number" class="policy-min" min="0" max="100" step="1"></td>
-      ${showPoints ? '<td><input type="number" class="policy-points" min="0" step="0.05"></td>' : ""}
-      <td><button type="button" class="danger icon remove-policy-band">Remove</button></td>
+      <td><input type="text" class="policy-letter" maxlength="12" aria-label="Grade letter"></td>
+      <td><input type="number" class="policy-min" min="0" max="100" step="1" aria-label="Minimum percentage"></td>
+      ${showPoints ? '<td><input type="number" class="policy-points" min="0" step="0.05" aria-label="Grade points"></td>' : ""}
+      <td><button type="button" class="danger icon remove-policy-band" aria-label="Remove grade band">Remove</button></td>
     `;
     row.querySelector(".policy-letter").value = band.letter;
     row.querySelector(".policy-min").value = band.minPercent;
@@ -488,20 +532,25 @@ function renderHome() {
 
   for (const course of data.courses) {
     const grade = Calc.courseGrade(course);
+    const gpa = Calc.courseGpa(course, data.gradingPolicy);
     const item = document.createElement("li");
     item.className = "course-card";
     item.innerHTML = `
       <button type="button" class="open">
-        <h3></h3>
-        <div class="grade"></div>
+        <span class="course-card-title"></span>
+        <span class="grade"></span>
+        <span class="course-card-meta"></span>
       </button>
       <div class="course-actions">
         <button type="button" class="ghost rename">Rename</button>
         <button type="button" class="danger delete">Delete</button>
       </div>
     `;
-    item.querySelector("h3").textContent = course.name || "Untitled course";
+    item.querySelector(".course-card-title").textContent =
+      course.name || "Untitled course";
     item.querySelector(".grade").textContent = formatPercent(grade.percent);
+    item.querySelector(".course-card-meta").textContent =
+      `${formatPoints(course.credits)} credits · ${course.gradingMode === "points" ? "Points" : "Weighted"} · ${gpa.eligible ? "Included in GPA" : "Not yet in GPA"}`;
     item
       .querySelector(".open")
       .addEventListener("click", () => showCourse(course.id));
@@ -519,11 +568,13 @@ function renderHome() {
       if (!ok) {
         return;
       }
+      const previousData = cloneData(data);
       data.courses = data.courses.filter(
         (itemCourse) => itemCourse.id !== course.id,
       );
       await persist();
       renderHome();
+      showUndoNotice(course.name || "Course", previousData);
     });
     courseList.appendChild(item);
   }
@@ -553,10 +604,10 @@ function renderCourse() {
   for (const category of course.categories) {
     const row = document.createElement("tr");
     row.innerHTML = `
-      <td><input type="text" class="cat-name" maxlength="80" /></td>
-      <td class="weight-col"><input type="number" class="cat-weight" min="0" step="1" /></td>
-      <td><input type="number" class="cat-drop" min="0" step="1" /></td>
-      <td><button type="button" class="danger icon">Remove</button></td>
+      <td data-label="Name"><input type="text" class="cat-name" maxlength="80" aria-label="Category name" /></td>
+      <td data-label="Weight %" class="weight-col"><input type="number" class="cat-weight" min="0" step="1" aria-label="Category weight percentage" /></td>
+      <td data-label="Drop Lowest"><input type="number" class="cat-drop" min="0" step="1" aria-label="Assignments to drop" /></td>
+      <td data-label=""><button type="button" class="danger icon" aria-label="Remove category">Remove</button></td>
     `;
     const nameInput = row.querySelector(".cat-name");
     const weightInput = row.querySelector(".cat-weight");
@@ -612,10 +663,10 @@ function renderCourse() {
   function renderAssignmentRow(assignment, tableBody) {
     const row = document.createElement("tr");
     row.innerHTML = `
-      <td data-label="Name"><input type="text" class="asg-name" maxlength="120" /></td>
-      <td data-label="Earned"><input type="number" class="asg-earned" min="0" step="0.5" /></td>
-      <td data-label="Possible"><input type="number" class="asg-possible" min="0" step="0.5" /></td>
-      <td data-label=""><button type="button" class="danger icon">Remove</button></td>
+      <td data-label="Name"><input type="text" class="asg-name" maxlength="120" aria-label="Assignment name" /></td>
+      <td data-label="Earned"><input type="number" class="asg-earned" min="0" step="0.5" aria-label="Points earned" /></td>
+      <td data-label="Possible"><input type="number" class="asg-possible" min="0" step="0.5" aria-label="Possible points" /></td>
+      <td data-label=""><button type="button" class="danger icon" aria-label="Remove assignment">Remove</button></td>
     `;
     const nameInput = row.querySelector(".asg-name");
     const earnedInput = row.querySelector(".asg-earned");
@@ -765,9 +816,11 @@ document.getElementById("delete-course").addEventListener("click", async () => {
   if (!ok) {
     return;
   }
+  const previousData = cloneData(data);
   data.courses = data.courses.filter((item) => item.id !== course.id);
   await persist();
   showHome();
+  showUndoNotice(course.name || "Course", previousData);
 });
 
 courseNameInput.addEventListener("change", async () => {
@@ -848,6 +901,7 @@ async function init() {
     data.gradingPolicy = defaultGradingPolicy();
   }
   lastSavedData = cloneData(data);
+  saveStatus.textContent = "Saved locally";
   showHome();
 }
 
@@ -901,3 +955,8 @@ document.getElementById("import-data").addEventListener("click", async () => {
     currentCourseId = null;
   }
 });
+
+document
+  .getElementById("empty-add-course")
+  .addEventListener("click", addCourse);
+undoCourseButton.addEventListener("click", undoDelete);
