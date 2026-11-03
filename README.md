@@ -150,21 +150,23 @@ npm run dist:dir
 ```
 
 Releases are published automatically by GitHub Actions when a version tag is
-pushed. Before publishing a release:
+pushed. To prepare a release, run **Actions > Prepare Release** and enter the
+version without the leading `v` (for example, `0.3.0-beta.1`). The workflow
+updates `package.json` and `package-lock.json`, generates a release-notes draft
+at `.github/release-notes/v<version>.md`, runs the checks above, builds an
+unpacked application, and opens a pull request. Review the generated notes and
+merge that pull request, then test the packaged application on a clean Windows
+machine and create and push a matching version tag:
 
-1. Update the version in `package.json` and `package-lock.json`.
-2. Update the release notes or prepare the release description.
-3. Run the checks above and test the installer on a clean Windows machine.
-4. Create and push a matching version tag:
+```sh
+git tag v0.3.0-beta.1
+git push origin v0.3.0-beta.1
+```
 
-   ```sh
-   git tag v0.2.0-beta.2
-   git push origin v0.2.0-beta.2
-   ```
-
-The workflow publishes the installer, blockmap, and `latest.yml` to a
-pre-release on GitHub. It only runs for version tags and verifies that the tag
-matches the version in `package.json`.
+The tag-triggered release workflow then publishes the installer, blockmap, and
+`latest.yml` to a pre-release on GitHub. It verifies that the tag matches the
+version in `package.json`. The preparation workflow does not create tags or
+publish releases.
 
 Automatic updates are enabled for packaged prerelease builds. The installer
 and update packages are not code-signed during the beta phase, so Windows
