@@ -1,0 +1,139 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-03T06:52:00.000Z",
+  "title": "Design System: CollegeGradez",
+  "extensions": {
+    "colorMeta": {
+      "canvas": {
+        "role": "neutral",
+        "displayName": "Warm Canvas",
+        "canonical": "#f4f1ea",
+        "tonalRamp": ["#252b2f", "#41494b", "#626a69", "#858b87", "#a9ada5", "#c8c9c0", "#e2e0d6", "#f4f1ea"]
+      },
+      "paper": {
+        "role": "neutral",
+        "displayName": "Paper",
+        "canonical": "#fffdf8",
+        "tonalRamp": ["#282a28", "#484a46", "#6a6b65", "#8d8d85", "#b0b0a7", "#cecec4", "#e6e5dc", "#fffdf8"]
+      },
+      "accent": {
+        "role": "primary",
+        "displayName": "Academic Blue",
+        "canonical": "#0066cc",
+        "tonalRamp": ["#00244b", "#003c78", "#0050a0", "#0066cc", "#3a8ee0", "#72afe9", "#add1f2", "#e2effb"]
+      },
+      "danger": {
+        "role": "tertiary",
+        "displayName": "Danger Red",
+        "canonical": "#a33b3b",
+        "tonalRamp": ["#3c1111", "#5e1c1c", "#7d2929", "#a33b3b", "#bd6666", "#d18c8c", "#e6baba", "#f7e5e5"]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Application Title",
+        "purpose": "Product name and primary app identity."
+      },
+      "body": {
+        "displayName": "System Body",
+        "purpose": "Default interface copy and controls."
+      }
+    },
+    "shadows": [
+      {
+        "name": "ambient-low",
+        "value": "0 8px 24px rgba(28, 36, 48, 0.08)",
+        "purpose": "Quiet separation for cards, panels, summaries, and dialogs."
+      }
+    ],
+    "motion": [],
+    "breakpoints": [
+      { "name": "stack", "value": "850px" },
+      { "name": "compact", "value": "720px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Use for the main action in a view or panel.",
+      "html": "<button class=\"ds-btn-primary\">Add Course</button>",
+      "css": ".ds-btn-primary { background: #0066cc; color: #ffffff; border: 0; border-radius: 8px; padding: 8px 14px; font: inherit; cursor: pointer; } .ds-btn-primary:hover { background: #0052a3; } .ds-btn-primary:focus-visible { outline: 2px solid #0052a3; outline-offset: 2px; }"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Use for secondary navigation and import/export actions.",
+      "html": "<button class=\"ds-btn-ghost\">Export</button>",
+      "css": ".ds-btn-ghost { background: transparent; color: #0066cc; border: 1px solid #d9d2c5; border-radius: 8px; padding: 8px 14px; font: inherit; cursor: pointer; } .ds-btn-ghost:hover { background: #e8f3ef; } .ds-btn-ghost:focus-visible { outline: 2px solid #0052a3; outline-offset: 2px; }"
+    },
+    {
+      "name": "Danger Button",
+      "kind": "button",
+      "refersTo": "button-danger",
+      "description": "Use only for destructive actions such as deleting a course.",
+      "html": "<button class=\"ds-btn-danger\">Delete Course</button>",
+      "css": ".ds-btn-danger { background: transparent; color: #a33b3b; border: 1px solid #d9d2c5; border-radius: 8px; padding: 8px 14px; font: inherit; cursor: pointer; } .ds-btn-danger:hover { background: #f8ecec; color: #822e2e; } .ds-btn-danger:focus-visible { outline: 2px solid #a33b3b; outline-offset: 2px; }"
+    },
+    {
+      "name": "Paper Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Shared container for course cards, panels, summaries, and dialogs.",
+      "html": "<section class=\"ds-card\"><h3>Course summary</h3><p>Current grade</p></section>",
+      "css": ".ds-card { background: #fffdf8; color: #1a252c; border: 1px solid #d9d2c5; border-radius: 12px; box-shadow: 0 8px 24px rgba(28, 36, 48, 0.08); padding: 18px; } .ds-card h3 { margin: 0 0 10px; }"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Full-width field for course and assignment data.",
+      "html": "<label class=\"ds-field\"><span>Course Name</span><input type=\"text\" value=\"Calculus I\" /></label>",
+      "css": ".ds-field { display: grid; gap: 6px; color: #5c6776; font: 0.92rem/1.4 \"Segoe UI\", Tahoma, sans-serif; } .ds-field input { width: 100%; background: #ffffff; color: #1a252c; border: 1px solid #d9d2c5; border-radius: 8px; padding: 8px 10px; font: inherit; } .ds-field input:focus-visible { outline: 2px solid #0066cc; outline-offset: 1px; border-color: #0066cc; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Calm Gradebook.",
+    "overview": "CollegeGradez uses a quiet, practical desktop-tool language: warm off-white canvas, paper-like cards, and a single clear blue action color. The interface should feel dependable while a student is entering live academic information, with status and calculation results easy to scan rather than theatrically presented.\n\nThe visual system is intentionally restrained. Rounded containers, thin warm dividers, and a diffuse low shadow create separation without making the workspace feel heavy. Use the existing hierarchy and spacing rhythm to keep course editing useful at both wide and narrow window sizes.",
+    "keyCharacteristics": [
+      "Warm canvas with near-white paper surfaces.",
+      "Blue primary actions and grade/GPA emphasis.",
+      "Segoe UI system typography with compact headings.",
+      "Thin beige borders and a single ambient shadow vocabulary.",
+      "Responsive layouts that stack secondary GPA and policy information below the primary editing content."
+    ],
+    "rules": [
+      {
+        "name": "The One Accent Rule",
+        "body": "Keep blue as the dominant interactive and academic status signal. Do not introduce additional saturated accents for ordinary categories or decoration.",
+        "section": "colors"
+      },
+      {
+        "name": "The Clarity Hierarchy Rule",
+        "body": "Reserve the largest or heaviest text for the product title and calculated results; supporting copy stays muted and compact.",
+        "section": "typography"
+      },
+      {
+        "name": "The Primary Work First Rule",
+        "body": "Keep the course editor and course list ahead of secondary GPA, policy, and explanatory panels when the layout stacks.",
+        "section": "layout"
+      }
+    ],
+    "dos": [
+      "Do use the established warm canvas, paper surfaces, beige borders, and blue action hierarchy.",
+      "Do keep calculated grades and GPA visually prominent but compact.",
+      "Do preserve the two-column desktop layout and stacked narrow-screen behavior.",
+      "Do make empty, invalid, error, and success states explicit with the established muted or soft feedback treatments.",
+      "Do use system typography and the existing radius/spacing scale."
+    ],
+    "donts": [
+      "Don't add gradients, decorative illustrations, or high-intensity visual effects to ordinary editor surfaces.",
+      "Don't use the danger red for non-destructive status or primary actions.",
+      "Don't replace the paper-card hierarchy with dense dark surfaces or unbordered floating elements.",
+      "Don't hide secondary GPA or policy information above the primary course editing workflow on narrow screens.",
+      "Don't treat missing or invalid academic data as a successful numeric result."
+    ]
+  }
+}
