@@ -2,7 +2,7 @@
 name: DevOps / CI-CD
 about: Issues related to development
 title: ''
-labels: ''
+labels: DevOps / CI-CD
 assignees: ''
 
 ---
