@@ -9,6 +9,10 @@
   --danger: #9b4a45;
   --danger-hover: #7d3c38;
   --white: #ffffff;
+  --selection: #cbd9e2;
+  --line-subtle: #e8eef0;
+  --line-hover: #9fb3bc;
+  --overlay: rgba(28, 36, 48, 0.4);
   --surface-subtle: #eaf0f4;
   --surface-error: #f8ecec;
   --line-error: #d9aaaa;
@@ -35,7 +39,7 @@ body {
 }
 
 ::selection {
-  background: #cbd9e2;
+  background: var(--selection);
   color: var(--ink);
 }
 
@@ -94,7 +98,7 @@ select,
 button {
   min-height: 44px;
   background: var(--accent);
-  color: white;
+  color: var(--white);
   border: 0;
   border-radius: var(--radius-sm);
   padding: 8px 14px;
@@ -446,7 +450,7 @@ button.icon {
 input[type="text"]:hover,
 input[type="number"]:hover,
 select:hover {
-  border-color: #9fb3bc;
+  border-color: var(--line-hover);
 }
 
 input[type="text"],
@@ -487,7 +491,7 @@ select {
 }
 
 .data-table td {
-  border-top: 1px solid #e8eef0;
+  border-top: 1px solid var(--line-subtle);
   padding: 8px 8px 8px 0;
   vertical-align: middle;
 }
@@ -647,7 +651,7 @@ body.points-mode .weight-col {
 .dialog {
   position: fixed;
   inset: 0;
-  background: rgba(28, 36, 48, 0.4);
+  background: var(--overlay);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -860,5 +864,12 @@ body.points-mode .weight-col {
 
   .gpa-sidebar .summary {
     position: static;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Preserve focus and state changes without the button press movement. */
+  button:active {
+    transform: none;
   }
 }
