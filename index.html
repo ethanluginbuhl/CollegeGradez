@@ -15,8 +15,8 @@
       <header class="topbar">
         <h1>CollegeGradez</h1>
         <p class="tagline">
-          A practical, local-first alternative to maintaining grades in a
-          spreadsheet.
+          Grades and GPA shown are estimates based on the information you enter.
+          Verify results independently.
         </p>
       </header>
       <p
@@ -26,6 +26,15 @@
         aria-live="polite"
         aria-atomic="true"
       ></p>
+      <div
+        id="undo-notice"
+        class="undo-notice hidden"
+        role="status"
+        aria-live="polite"
+      >
+        <span id="undo-message"></span>
+        <button id="undo-course" type="button" class="ghost">Undo</button>
+      </div>
 
       <main id="view-home" class="view">
         <div class="view-header">
@@ -36,9 +45,25 @@
             <button id="add-course" type="button">Add Course</button>
           </div>
         </div>
-        <p id="home-empty" class="empty hidden">
-          No courses yet. Add one to start tracking grades.
-        </p>
+        <section
+          id="home-empty"
+          class="empty-state hidden"
+          aria-labelledby="empty-heading"
+        >
+          <h3 id="empty-heading">Start with one course</h3>
+          <p>
+            Add a course, then enter categories and assignments to see your
+            current grade and GPA update as you go.
+          </p>
+          <ol>
+            <li>Add a course and its credit value.</li>
+            <li>Confirm the grading categories.</li>
+            <li>Enter assignment scores as they are returned.</li>
+          </ol>
+          <button id="empty-add-course" type="button">
+            Add Your First Course
+          </button>
+        </section>
         <div class="overview-layout">
           <section class="overview-courses">
             <ul id="course-list" class="course-list"></ul>
@@ -104,7 +129,7 @@
               <p id="categories-empty" class="empty hidden">
                 Add at least one category (for example Homework or Exams).
               </p>
-              <table class="data-table">
+              <table class="data-table category-table">
                 <thead>
                   <tr>
                     <th>Name</th>
@@ -143,7 +168,12 @@
     >
       <div class="dialog-card">
         <p id="dialog-message"></p>
-        <input id="dialog-input" type="text" maxlength="120" />
+        <input
+          id="dialog-input"
+          type="text"
+          maxlength="120"
+          aria-label="Dialog input"
+        />
         <div class="dialog-actions">
           <button type="button" id="dialog-cancel" class="ghost">Cancel</button>
           <button type="button" id="dialog-ok">OK</button>
