@@ -30,6 +30,7 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--ink);
+  /* Keep the app chrome from appearing selectable; form fields opt back in below. */
   user-select: none;
 }
 
@@ -43,6 +44,7 @@ textarea,
 select,
 [contenteditable="true"],
 [contenteditable=""] {
+  /* Editable content must remain selectable for copying and correction. */
   user-select: text;
 }
 
@@ -228,6 +230,7 @@ button.icon {
 
 .overview-layout {
   display: grid;
+  /* Let the course list grow while keeping policy controls readable. */
   grid-template-columns: minmax(0, 1fr) minmax(320px, 360px);
   align-items: start;
   gap: 16px;
@@ -318,6 +321,7 @@ button.icon {
 .course-meta,
 .panel,
 .summary {
+  /* Shared elevated surface for course editors, panels, and summaries. */
   background: var(--paper);
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
@@ -328,6 +332,7 @@ button.icon {
 
 .course-layout {
   display: grid;
+  /* Keep GPA context beside the main editor on wide screens. */
   grid-template-columns: minmax(320px, 360px) minmax(0, 1fr);
   align-items: start;
   gap: 16px;
@@ -533,16 +538,60 @@ select {
   table-layout: fixed;
 }
 
+.category-table {
+  table-layout: fixed;
+}
+
+/* Category name column. */
+.category-table th:nth-child(1),
+.category-table td:nth-child(1) {
+  width: 45%;
+}
+
+/* Weight and drop-lowest columns. */
+.category-table th:nth-child(2),
+.category-table td:nth-child(2),
+.category-table th:nth-child(3),
+.category-table td:nth-child(3) {
+  width: 20%;
+}
+
+/* Category action column. */
+.category-table th:last-child,
+.category-table td:last-child {
+  width: 15%;
+}
+
+/* Points mode removes Weight %, so expand the name column. */
+body.points-mode .category-table th:nth-child(1),
+body.points-mode .category-table td:nth-child(1) {
+  width: 60%;
+}
+
+/* Points-mode Drop Lowest column. */
+body.points-mode .category-table th:nth-child(3),
+body.points-mode .category-table td:nth-child(3) {
+  width: 25%;
+}
+
+/* Assignment name column. */
 .assignment-table th:nth-child(1),
 .assignment-table td:nth-child(1) {
   width: 45%;
 }
 
+/* Assignment points and weight columns. */
 .assignment-table th:nth-child(2),
 .assignment-table td:nth-child(2),
 .assignment-table th:nth-child(3),
 .assignment-table td:nth-child(3) {
   width: 20%;
+}
+
+/* Assignment action column. */
+.assignment-table th:last-child,
+.assignment-table td:last-child {
+  width: 15%;
 }
 
 .assignment-table input {
@@ -563,6 +612,7 @@ select {
 
 .summary .gpa-value,
 .summary .overall {
+  /* Align changing grades and GPAs as readable numeric values. */
   font-variant-numeric: tabular-nums;
 }
 
@@ -589,6 +639,7 @@ select {
   display: none;
 }
 
+/* Points mode has no category weights, so remove both header and cell columns. */
 body.points-mode .weight-col {
   display: none;
 }
@@ -636,6 +687,7 @@ body.points-mode .weight-col {
 }
 
 @media (max-width: 850px) {
+  /* Stack secondary GPA and policy content below the primary editor. */
   .overview-layout,
   .course-layout {
     display: flex;
@@ -656,6 +708,7 @@ body.points-mode .weight-col {
 }
 
 @media (max-width: 720px) {
+  /* Reduce page gutters and convert wide controls into full-width groups. */
   #app {
     padding-left: 14px;
     padding-right: 14px;
@@ -710,10 +763,12 @@ body.points-mode .weight-col {
 
   .category-table,
   .policy-table {
+    /* Preserve access to wide policy content without squeezing inputs. */
     display: block;
     overflow-x: auto;
   }
 
+  /* Replace table headers with per-field labels in the compact category editor. */
   .category-table thead {
     display: none;
   }
@@ -762,6 +817,7 @@ body.points-mode .weight-col {
     display: none;
   }
 
+  /* Each assignment becomes a compact, two-field editing block. */
   .assignment-table,
   .assignment-table tbody,
   .assignment-table tr,
