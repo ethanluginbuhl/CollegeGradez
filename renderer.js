@@ -531,7 +531,10 @@ function renderHome() {
     item.innerHTML = `
       <button type="button" class="open">
         <span class="course-card-title"></span>
-        <span class="grade"></span>
+        <span class="grade-display">
+          <span class="grade"></span>
+          <span class="grade-letter"></span>
+        </span>
         <span class="course-card-meta"></span>
       </button>
       <div class="course-actions">
@@ -542,6 +545,7 @@ function renderHome() {
     item.querySelector(".course-card-title").textContent =
       course.name || "Untitled course";
     item.querySelector(".grade").textContent = formatPercent(grade.percent);
+    item.querySelector(".grade-letter").textContent = gpa.letter || "—";
     item.querySelector(".course-card-meta").textContent =
       `${formatPoints(course.credits)} credits · ${course.gradingMode === "points" ? "Points" : "Weighted"} · ${gpa.eligible ? "Included in GPA" : "Not yet in GPA"}`;
     item

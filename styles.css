@@ -310,11 +310,23 @@ button.icon {
   margin: 5px 0 0;
 }
 
+.course-card .grade-display {
+  align-items: baseline;
+  display: flex;
+  gap: 8px;
+}
+
 .course-card .grade {
   font-size: 1.55rem;
   font-variant-numeric: tabular-nums;
   font-weight: 750;
   color: var(--accent);
+}
+
+.course-card .grade-letter {
+  color: var(--accent);
+  font-size: 1.2rem;
+  font-weight: 700;
 }
 
 .course-actions {
