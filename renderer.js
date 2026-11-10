@@ -259,10 +259,10 @@ function renderGradeSummary(course) {
     .map((cat) => {
       const extra =
         course.gradingMode === "weighted" && cat.weight != null
-          ? ` — Weight ${Number(cat.weight) || 0}%`
+          ? ` · Weight ${Number(cat.weight) || 0}%`
           : "";
       const dropped =
-        Number(cat.dropLowest) > 0 ? ` — Drop ${cat.dropLowest}` : "";
+        Number(cat.dropLowest) > 0 ? ` · Drop ${cat.dropLowest}` : "";
       return `<li><span>${escapeHtml(cat.name || "Untitled")}${extra}${dropped}</span><span>${formatPercent(cat.percent)}</span></li>`;
     })
     .join("");
