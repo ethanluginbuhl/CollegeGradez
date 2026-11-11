@@ -221,3 +221,75 @@ test("calculates a credit-weighted GPA and excludes incomplete courses", () => {
   assert.equal(result.gpa, 11 / 3);
   assert.equal(result.courses[2].result.eligible, false);
 });
+
+test("includes previously taken courses and optionally excludes current courses", () => {
+  const data = {
+    gradingPolicy: {
+      bands: [
+        { letter: "A", minPercent: 90, points: 4 },
+        { letter: "B", minPercent: 80, points: 3 },
+        { letter: "F", minPercent: 0, points: 0 },
+      ],
+    },
+    courses: [
+      {
+        gradingMode: "points",
+        credits: 3,
+        categories: [{ id: "all", weight: 100, dropLowest: 0 }],
+        assignments: [{ categoryId: "all", earned: 95, possible: 100 }],
+      },
+    ],
+    previousCourses: [
+      { id: "past-1", name: "History", credits: 4, grade: "B" },
+      { id: "past-2", name: "Elective", credits: 2, grade: "Unknown" },
+    ],
+  };
+
+  const included = calculateGpa(data);
+  assert.equal(included.credits, 7);
+  assert.equal(included.gpa, (4 * 3 + 3 * 4) / 7);
+  assert.equal(included.previousCourses[1].result.eligible, false);
+
+  data.includeCurrentCourses = false;
+  const previousOnly = calculateGpa(data);
+  assert.equal(previousOnly.credits, 4);
+  assert.equal(previousOnly.gpa, 3);
+  assert.equal(previousOnly.courses[0].result.eligible, true);
+});
+
+test("preserves transferred grade points when a custom label is absent from the default policy", () => {
+  const result = calculateGpa({
+    courses: [],
+    previousCourses: [
+      {
+        id: "past-1",
+        name: "Seminar",
+        credits: 2,
+        grade: "Pass",
+        gradePoints: 3.5,
+      },
+    ],
+  });
+
+  assert.equal(result.gpa, 3.5);
+  assert.equal(result.previousCourses[0].result.letter, "Pass");
+});
+
+test("does not include a previously taken course without a selected grade", () => {
+  const result = calculateGpa({
+    courses: [],
+    previousCourses: [
+      {
+        id: "past-1",
+        name: "Incomplete entry",
+        credits: 3,
+        grade: "",
+        gradePoints: 4,
+      },
+    ],
+  });
+
+  assert.equal(result.credits, 0);
+  assert.equal(result.gpa, null);
+  assert.equal(result.previousCourses[0].result.eligible, false);
+});

@@ -45,6 +45,8 @@ security issues.
 - Calculate grades using weighted categories or total points.
 - Drop the lowest scored assignments within a category.
 - Show live course grade summaries and overall GPA.
+- Record previously taken courses with their credits and final letter grades,
+  include them in overall GPA, and move completed current courses into history.
 - Configure a default grading policy with custom percentage thresholds, letter
   grades, and grade points.
 - Override the default grading policy for an individual course.
@@ -70,8 +72,8 @@ powerful features.
 ## Data safety
 
 Use the **Export** button on the Courses screen to save a portable JSON copy of
-your grade data. **Import** validates the selected JSON file and asks for
-confirmation before replacing the current courses.
+your grade data. **Import** validates the selected JSON file and asks for confirmation before
+replacing your saved grade data.
 
 The app saves to its Electron user-data directory. Before each local save it
 creates a timestamped backup and keeps the 10 most recent backups alongside the
@@ -95,6 +97,13 @@ drop-lowest count only removes scored assignments when enough scores remain.
 Courses contribute to the overall GPA only when they have a completed grade and
 positive credits. Excluded courses are shown explicitly rather than being
 treated as zero.
+
+Previously taken courses contribute according to their final letter grade and
+the default grading policy. Current courses can be excluded from overall GPA
+without removing them from the active course list. The Courses screen can move
+completed, positive-credit current courses into the previously taken list;
+incomplete and zero-credit courses remain active. Historical courses do not
+include term-specific GPA calculations.
 
 ## Development
 

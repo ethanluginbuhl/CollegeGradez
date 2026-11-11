@@ -1,3 +1,4 @@
 # Ignore artifacts:
+.github/skills/impeccable
 build
 coverage

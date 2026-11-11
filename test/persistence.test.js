@@ -89,8 +89,27 @@ test("preserves invalid saved data before reporting the read failure", () => {
 test("validates and writes exports", () => {
   const directory = temporaryDirectory();
   const file = path.join(directory, "export.json");
-  writeExport(validData(), file);
-  assert.deepEqual(readImportFile(file), validData());
+  const data = validData();
+  data.includeCurrentCourses = false;
+  data.previousCourses = [
+    { id: "past-1", name: "History", credits: 3, grade: "A-" },
+  ];
+  writeExport(data, file);
+  assert.deepEqual(readImportFile(file), data);
   assert.throws(() => writeExport({ invalid: true }, file), /courses array/);
+  fs.rmSync(directory, { recursive: true, force: true });
+});
+
+test("persists previously taken courses and GPA settings", () => {
+  const directory = temporaryDirectory();
+  const file = path.join(directory, "grades.json");
+  const data = validData();
+  data.includeCurrentCourses = false;
+  data.previousCourses = [
+    { id: "past-1", name: "History", credits: 3, grade: "A-" },
+  ];
+
+  writeData(data, file);
+  assert.deepEqual(readData(file), data);
   fs.rmSync(directory, { recursive: true, force: true });
 });
