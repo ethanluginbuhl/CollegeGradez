@@ -13,7 +13,8 @@ maintaining grades in a spreadsheet.
 
 ## Download
 
-Windows installers are published on the
+See the [project website](https://ethanluginbuhl.github.io/CollegeGradez/) for
+an overview. Windows installers are published on the
 [GitHub Releases page](https://github.com/ethanluginbuhl/CollegeGradez/releases).
 The installers are currently unsigned, so Windows SmartScreen may display a
 warning. Verify that downloads come from this repository's releases and review
@@ -171,6 +172,27 @@ publish releases.
 Automatic updates are enabled for packaged prerelease builds. The installer
 and update packages are not code-signed during the beta phase, so Windows
 SmartScreen may still display a warning.
+
+## Project website
+
+The landing page at <https://ethanluginbuhl.github.io/CollegeGradez/> is a
+static, single-page site written in vanilla HTML and CSS. Its source is in the
+[`docs`](docs) folder:
+
+- `docs/index.html`: page content, including the download link, SmartScreen
+  note, and feature list.
+- `docs/styles.css`: styles, using the same palette as the app.
+- `docs/icon.png` and `docs/screenshot.png`: images used on the page.
+
+To preview it locally, open `docs/index.html` in a browser. There is no build
+step. The site is published by GitHub Pages from the `main` branch and `/docs`
+folder (**Settings > Pages > Build and deployment > Deploy from a branch**), so
+merged changes to `docs` go live automatically.
+
+The page is not part of the packaged application. When behavior or a release
+changes, update the hardcoded version label in `docs/index.html` and replace
+`docs/screenshot.png` if the UI has changed noticeably. Keep the feature list
+and SmartScreen note consistent with this README.
 
 ## Contributing
 
