@@ -1,3 +1,7 @@
+function isPrereleaseVersion(version) {
+  return version.split("+", 1)[0].includes("-");
+}
+
 function configureAutoUpdater({
   app,
   autoUpdater,
@@ -9,7 +13,7 @@ function configureAutoUpdater({
     return false;
   }
 
-  autoUpdater.allowPrerelease = true;
+  autoUpdater.allowPrerelease = isPrereleaseVersion(app.getVersion());
   autoUpdater.autoDownload = true;
   autoUpdater.autoInstallOnAppQuit = false;
   autoUpdater.on("update-available", (info) => {
@@ -42,4 +46,4 @@ function configureAutoUpdater({
   return true;
 }
 
-module.exports = { configureAutoUpdater };
+module.exports = { configureAutoUpdater, isPrereleaseVersion };

@@ -2,8 +2,8 @@
 
 ## Supported versions
 
-Security fixes are currently provided for the latest beta release on the
-`main` branch. Older releases may not receive fixes.
+Security fixes are currently provided for the latest stable release. Older
+releases may not receive fixes.
 
 ## Reporting a vulnerability
 

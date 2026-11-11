@@ -46,30 +46,34 @@ jobs:
           $tag = "${{ github.ref_name }}"
           $repo = "${{ github.repository }}"
           $version = (Get-Content package.json | ConvertFrom-Json).version
+          $isPrerelease = (node -p "require('./update-manager').isPrereleaseVersion(require('./package.json').version)") -eq "true"
+          if ($LASTEXITCODE -ne 0) {
+            throw "Could not determine the release channel."
+          }
+          $prereleaseOption = "--prerelease=$($isPrerelease.ToString().ToLowerInvariant())"
           $assets = @(
             "release/CollegeGradez-Setup-$version.exe",
             "release/CollegeGradez-Setup-$version.exe.blockmap",
             "release/latest.yml"
           )
           $notesFile = ".github/release-notes/$tag.md"
+          $releaseOptions = @("--title", "CollegeGradez $tag", $prereleaseOption)
+          if (Test-Path $notesFile) {
+            $releaseOptions += @("--notes-file", $notesFile)
+          }
           gh release view $tag --repo $repo *> $null
           if ($LASTEXITCODE -eq 0) {
             gh release upload $tag $assets --repo $repo --clobber
-            if (Test-Path $notesFile) {
-              gh release edit $tag --repo $repo `
-                --title "CollegeGradez $tag" --prerelease `
-                --notes-file $notesFile
-            } else {
-              gh release edit $tag --repo $repo `
-                --title "CollegeGradez $tag" --prerelease
+            if ($LASTEXITCODE -ne 0) {
+              throw "Could not upload release assets for $tag."
             }
+            gh release edit $tag --repo $repo @releaseOptions
           } else {
-            if (Test-Path $notesFile) {
-              gh release create $tag $assets --repo $repo `
-                --title "CollegeGradez $tag" --prerelease `
-                --notes-file $notesFile
-            } else {
-              gh release create $tag $assets --repo $repo `
-                --title "CollegeGradez $tag" --prerelease --generate-notes
+            if (-not (Test-Path $notesFile)) {
+              $releaseOptions += "--generate-notes"
             }
+            gh release create $tag $assets --repo $repo @releaseOptions
+          }
+          if ($LASTEXITCODE -ne 0) {
+            throw "Could not create or update release $tag."
           }

@@ -7,10 +7,6 @@ CollegeGradez is a Windows desktop grade tracker and GPA calculator built with
 Electron. It is intended to be a practical, local-first alternative to
 maintaining grades in a spreadsheet.
 
-> **Status:** Beta (`0.2.0-beta.2`). The application is usable, but is still in
-> the beta phase as development continues. Back up your data before testing
-> beta releases.
-
 ## Download
 
 See the [project website](https://ethanluginbuhl.github.io/CollegeGradez/) for
@@ -21,8 +17,9 @@ warning. Verify that downloads come from this repository's releases and review
 the release notes before installing.
 
 Packaged builds check the GitHub Releases page for updates once at startup.
-Available prerelease updates download in the background, and the app asks
-whether to restart when an update is ready. Updates are not checked while
+Stable builds receive stable updates; prerelease builds can also receive
+prerelease updates. Available updates download in the background, and the app
+asks whether to restart when an update is ready. Updates are not checked while
 running the app locally with `npm start`.
 
 ## Privacy and data safety
@@ -161,26 +158,32 @@ npm run dist:dir
 
 Releases are published automatically by GitHub Actions when a version tag is
 pushed. To prepare a release, run **Actions > Prepare Release** and enter the
-version without the leading `v` (for example, `0.3.0-beta.1`). The workflow
-updates `package.json` and `package-lock.json`, generates a release-notes draft
-at `.github/release-notes/v<version>.md`, runs the checks above, builds an
-unpacked application, and opens a pull request. Review the generated notes and
-merge that pull request, then test the packaged application on a clean Windows
-machine and create and push a matching version tag:
+version without the leading `v` (for example, `1.0.0` or `1.1.0-beta.1`). The
+workflow updates `package.json` and `package-lock.json`, generates a
+release-notes draft at `.github/release-notes/v<version>.md`, runs the checks
+above, builds an unpacked application, and opens a pull request. If the
+version and release notes are already prepared, review those changes instead
+of running the preparation workflow again.
+
+Review the notes and merge the preparation changes, then test the installer on
+a clean Windows machine. Verify fresh installation, saving and restoring data,
+and upgrading from an existing version with a copy of representative data.
+Create and push a tag matching the version on the merged commit:
 
 ```sh
-git tag v0.3.0-beta.1
-git push origin v0.3.0-beta.1
+git tag v1.0.0
+git push origin v1.0.0
 ```
 
-The tag-triggered release workflow then publishes the installer, blockmap, and
-`latest.yml` to a pre-release on GitHub. It verifies that the tag matches the
-version in `package.json`. The preparation workflow does not create tags or
-publish releases.
+The tag-triggered release workflow verifies that the tag matches the version
+in `package.json`, then publishes the installer, blockmap, and `latest.yml` to
+GitHub. Versions with a prerelease suffix are marked as prereleases; versions
+without one are full releases. The preparation workflow does not create tags
+or publish releases. Check the published release and test the update path from
+an installed earlier version, including from beta to stable when applicable.
 
-Automatic updates are enabled for packaged prerelease builds. The installer
-and update packages are not code-signed during the beta phase, so Windows
-SmartScreen may still display a warning.
+Installers and update packages are currently unsigned, so Windows SmartScreen
+may display a warning.
 
 ## Project website
 
@@ -199,9 +202,9 @@ folder (**Settings > Pages > Build and deployment > Deploy from a branch**), so
 merged changes to `docs` go live automatically.
 
 The page is not part of the packaged application. When behavior or a release
-changes, update the hardcoded version label in `docs/index.html` and replace
-`docs/screenshot.png` if the UI has changed noticeably. Keep the feature list
-and SmartScreen note consistent with this README.
+changes, update its content and replace `docs/screenshot.png` if the UI has
+changed noticeably. Keep the feature list and SmartScreen note consistent with
+this README.
 
 ## Contributing
 

@@ -1,8 +1,7 @@
 # Contributing to CollegeGradez
 
-Thank you for helping improve CollegeGradez. The project is in beta, so
-focused bug fixes, usability improvements, documentation, and tests are
-especially valuable.
+Thank you for helping improve CollegeGradez. Focused bug fixes, usability
+improvements, documentation, and tests are especially valuable.
 
 ## Before opening an issue
 
