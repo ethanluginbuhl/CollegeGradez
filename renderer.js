@@ -6,6 +6,14 @@ const courseNameInput = document.getElementById("course-name");
 const gradeSummary = document.getElementById("grade-summary");
 const courseGpaCard = document.getElementById("course-gpa-card");
 const overviewGpaCard = document.getElementById("overview-gpa-card");
+const previousCourseList = document.getElementById("previous-course-list");
+const previousCoursesEmpty = document.getElementById("previous-courses-empty");
+const includeCurrentCoursesInput = document.getElementById(
+  "include-current-courses",
+);
+const transferCompletedCoursesButton = document.getElementById(
+  "transfer-completed-courses",
+);
 const defaultPolicyEditor = document.getElementById("default-policy-editor");
 const categoryRows = document.getElementById("category-rows");
 const assignmentGroups = document.getElementById("assignment-groups");
@@ -500,27 +508,138 @@ function renderCourseGpa(course) {
 
 function renderOverallGpa(card = overviewGpaCard) {
   const overall = Calc.calculateGpa(data);
-  const rows = overall.courses
+  const previousRows = overall.previousCourses
     .map(
       ({ course, result }) =>
-        `<li><span>${escapeHtml(course.name || "Untitled")}</span><span>${result.eligible ? `${result.letter} (${formatGpa(result.points)})` : "Excluded"}</span></li>`,
+        `<li><span>${escapeHtml(course.name || "Untitled")}</span><span>${result.eligible ? `${escapeHtml(result.letter)} (${formatGpa(result.points)})` : "Not yet eligible"}</span></li>`,
     )
     .join("");
+  const currentRows = overall.courses
+    .map(
+      ({ course, result }) =>
+        `<li><span>${escapeHtml(course.name || "Untitled")}</span><span>${data.includeCurrentCourses === false ? "Current courses excluded" : result.eligible ? `${escapeHtml(result.letter)} (${formatGpa(result.points)})` : "Not yet eligible"}</span></li>`,
+    )
+    .join("");
+  const divider =
+    previousRows && currentRows
+      ? '<li class="gpa-course-divider" role="separator"></li>'
+      : "";
+  const rows = `${previousRows}${divider}${currentRows}`;
   card.innerHTML = `
     <h3>Overall GPA</h3>
     <p class="gpa-value">${formatGpa(overall.gpa)}</p>
     <p class="panel-help">${formatPoints(overall.credits)} eligible credits</p>
-    <ul>${rows || "<li><span>No courses yet</span><span></span></li>"}</ul>
+    <ul>${rows || "<li><span>No eligible courses yet</span><span></span></li>"}</ul>
   `;
+}
+
+function currentPolicy() {
+  return data.gradingPolicy || defaultGradingPolicy();
+}
+
+function eligibleCurrentCourses() {
+  return data.courses.filter((course) => {
+    const result = Calc.courseGpa(course, currentPolicy());
+    return result.eligible && result.letter;
+  });
+}
+
+function renderPreviousCourses() {
+  const body = previousCourseList.querySelector("tbody");
+  body.replaceChildren();
+  const previousCourses = data.previousCourses || [];
+  previousCoursesEmpty.classList.toggle("hidden", previousCourses.length > 0);
+  previousCourseList.classList.toggle("hidden", previousCourses.length === 0);
+  includeCurrentCoursesInput.checked = data.includeCurrentCourses !== false;
+  transferCompletedCoursesButton.disabled =
+    eligibleCurrentCourses().length === 0;
+
+  for (const course of previousCourses) {
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td><input class="previous-course-name" type="text" maxlength="120" aria-label="Course name"></td>
+      <td><input class="previous-course-credits" type="number" min="0" step="0.5" aria-label="Course credits"></td>
+      <td><select class="previous-course-grade" aria-label="Final grade"></select></td>
+      <td><button type="button" class="danger previous-course-remove">Remove</button></td>
+    `;
+    const nameInput = row.querySelector(".previous-course-name");
+    const creditsInput = row.querySelector(".previous-course-credits");
+    const gradeSelect = row.querySelector(".previous-course-grade");
+    const removeButton = row.querySelector(".previous-course-remove");
+    nameInput.value = course.name;
+    creditsInput.value = course.credits;
+    removeButton.setAttribute(
+      "aria-label",
+      `Remove ${course.name} from previously taken courses`,
+    );
+    gradeSelect.add(new Option("Choose a grade", ""));
+    for (const band of currentPolicy().bands) {
+      gradeSelect.add(new Option(band.letter, band.letter));
+    }
+    if (
+      course.grade &&
+      !currentPolicy().bands.some((band) => band.letter === course.grade)
+    ) {
+      const savedGradeDescription = Number.isFinite(course.gradePoints)
+        ? "saved grade points"
+        : "not in current policy";
+      gradeSelect.add(
+        new Option(`${course.grade} (${savedGradeDescription})`, course.grade),
+      );
+    }
+    gradeSelect.value = course.grade;
+
+    const saveCourse = async () => {
+      course.name = nameInput.value.trim() || "Untitled course";
+      course.credits = parseOptionalNumber(creditsInput.value) ?? 0;
+      course.grade = gradeSelect.value;
+      nameInput.value = course.name;
+      creditsInput.value = course.credits;
+      try {
+        await persist();
+        renderOverallGpa(overviewGpaCard);
+        transferCompletedCoursesButton.disabled =
+          eligibleCurrentCourses().length === 0;
+      } catch (error) {
+        console.error("Failed to save previously taken course:", error);
+      }
+    };
+    nameInput.addEventListener("change", saveCourse);
+    creditsInput.addEventListener("change", saveCourse);
+    gradeSelect.addEventListener("change", saveCourse);
+    removeButton.addEventListener("click", async () => {
+      const confirmed = await askConfirm(
+        `Remove “${course.name}” from previously taken courses?`,
+      );
+      if (!confirmed) {
+        return;
+      }
+      data.previousCourses = data.previousCourses.filter(
+        (previousCourse) => previousCourse.id !== course.id,
+      );
+      try {
+        await persist();
+        renderHome();
+      } catch (error) {
+        console.error("Failed to remove previously taken course:", error);
+      }
+    });
+    body.appendChild(row);
+  }
 }
 
 function renderHome() {
   courseList.innerHTML = "";
-  homeEmpty.classList.toggle("hidden", data.courses.length > 0);
+  homeEmpty.classList.toggle(
+    "hidden",
+    data.courses.length > 0 || (data.previousCourses || []).length > 0,
+  );
   renderOverallGpa(overviewGpaCard);
+  renderPreviousCourses();
   renderPolicyEditor(defaultPolicyEditor, data.gradingPolicy, async () => {
     await persist();
     renderOverallGpa(overviewGpaCard);
+    renderPreviousCourses();
   });
 
   for (const course of data.courses) {
@@ -547,7 +666,7 @@ function renderHome() {
     item.querySelector(".grade").textContent = formatPercent(grade.percent);
     item.querySelector(".grade-letter").textContent = gpa.letter || "—";
     item.querySelector(".course-card-meta").textContent =
-      `${formatPoints(course.credits)} credits · ${course.gradingMode === "points" ? "Points" : "Weighted"} · ${gpa.eligible ? "Included in GPA" : "Not yet in GPA"}`;
+      `${formatPoints(course.credits)} credits · ${course.gradingMode === "points" ? "Points" : "Weighted"} · ${data.includeCurrentCourses === false ? "Excluded from overall GPA" : gpa.eligible ? "Included in GPA" : "Not yet in GPA"}`;
     item
       .querySelector(".open")
       .addEventListener("click", () => showCourse(course.id));
@@ -801,6 +920,81 @@ async function addCourse() {
   await persist();
   renderHome();
 }
+
+document
+  .getElementById("add-previous-course")
+  .addEventListener("click", async () => {
+    if (!Array.isArray(data.previousCourses)) {
+      data.previousCourses = [];
+    }
+    data.previousCourses.push({
+      id: uid(),
+      name: "New course",
+      credits: 3,
+      grade: "",
+    });
+    try {
+      await persist();
+      renderHome();
+      previousCourseList
+        .querySelector("tbody")
+        .lastElementChild?.querySelector(".previous-course-name")
+        ?.focus();
+    } catch (error) {
+      console.error("Failed to add previously taken course:", error);
+    }
+  });
+
+includeCurrentCoursesInput.addEventListener("change", async () => {
+  data.includeCurrentCourses = includeCurrentCoursesInput.checked;
+  try {
+    await persist();
+    renderHome();
+    includeCurrentCoursesInput.focus();
+  } catch (error) {
+    console.error("Failed to update GPA course inclusion:", error);
+  }
+});
+
+transferCompletedCoursesButton.addEventListener("click", async () => {
+  const completedCourses = eligibleCurrentCourses();
+  if (completedCourses.length === 0) {
+    return;
+  }
+  const confirmed = await askConfirm(
+    `Move ${completedCourses.length} eligible current ${completedCourses.length === 1 ? "course" : "courses"} to history? Courses without a completed grade and positive credits will stay active.`,
+    false,
+  );
+  if (!confirmed) {
+    return;
+  }
+  if (!Array.isArray(data.previousCourses)) {
+    data.previousCourses = [];
+  }
+  const transferredIds = new Set(completedCourses.map((course) => course.id));
+  for (const course of completedCourses) {
+    const result = Calc.courseGpa(course, currentPolicy());
+    data.previousCourses.push({
+      id: uid(),
+      name: course.name || "Untitled course",
+      credits: result.credits,
+      grade: result.letter,
+      gradePoints: result.points,
+    });
+  }
+  data.courses = data.courses.filter(
+    (course) => !transferredIds.has(course.id),
+  );
+  try {
+    await persist();
+    renderHome();
+    showAppSuccess(
+      `${completedCourses.length} ${completedCourses.length === 1 ? "course" : "courses"} moved to previously taken courses.`,
+    );
+  } catch (error) {
+    console.error("Failed to move completed courses:", error);
+  }
+});
 
 document.getElementById("add-course").addEventListener("click", addCourse);
 document.getElementById("back-home").addEventListener("click", showHome);

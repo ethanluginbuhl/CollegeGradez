@@ -206,6 +206,27 @@
     };
   }
 
+  function previousCourseGpa(course, policy) {
+    const grade = typeof course.grade === "string" ? course.grade.trim() : "";
+    const band = grade
+      ? policy.bands.find((item) => item.letter === grade)
+      : null;
+    const points =
+      band && isNumber(band.points)
+        ? band.points
+        : grade && isNumber(course.gradePoints)
+          ? course.gradePoints
+          : null;
+    const credits =
+      isNumber(course.credits) && course.credits > 0 ? course.credits : null;
+    return {
+      letter: grade || null,
+      points,
+      credits,
+      eligible: points !== null && credits !== null,
+    };
+  }
+
   function calculateGpa(data) {
     const courses = (data && data.courses) || [];
     const defaultPolicy =
@@ -214,13 +235,24 @@
       course,
       result: courseGpa(course, defaultPolicy),
     }));
-    const eligible = courseResults.filter((item) => item.result.eligible);
+    const previousCourseResults = ((data && data.previousCourses) || []).map(
+      (course) => ({
+        course,
+        result: previousCourseGpa(course, defaultPolicy),
+      }),
+    );
+    const includedCourses =
+      data && data.includeCurrentCourses === false ? [] : courseResults;
+    const eligible = [...includedCourses, ...previousCourseResults].filter(
+      (item) => item.result.eligible,
+    );
     const credits = eligible.reduce(
       (sum, item) => sum + item.result.credits,
       0,
     );
     return {
       courses: courseResults,
+      previousCourses: previousCourseResults,
       credits,
       points: eligible.reduce(
         (sum, item) => sum + item.result.points * item.result.credits,
@@ -244,6 +276,7 @@
     letterGrade,
     reorderPolicyBands,
     courseGpa,
+    previousCourseGpa,
     calculateGpa,
   };
 });

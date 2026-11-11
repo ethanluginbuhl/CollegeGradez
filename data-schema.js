@@ -43,6 +43,18 @@ function validateData(data) {
   if (!data || !Array.isArray(data.courses)) {
     throw new Error("Data must contain a courses array");
   }
+  if (
+    data.includeCurrentCourses !== undefined &&
+    typeof data.includeCurrentCourses !== "boolean"
+  ) {
+    throw new Error("Current-course GPA setting must be a boolean");
+  }
+  if (
+    data.previousCourses !== undefined &&
+    !Array.isArray(data.previousCourses)
+  ) {
+    throw new Error("Previously taken courses must be an array");
+  }
   if (data.gradingPolicy !== undefined) {
     validatePolicy(data.gradingPolicy, "Default grading policy");
   }
@@ -117,6 +129,30 @@ function validateData(data) {
       ) {
         throw new Error(`Assignment ${assignmentIndex} has invalid points`);
       }
+    }
+  }
+
+  const previousCourseIds = new Set();
+  for (const [courseIndex, course] of (data.previousCourses || []).entries()) {
+    assertString(course.id, `Previously taken course ${courseIndex} id`);
+    if (previousCourseIds.has(course.id)) {
+      throw new Error(
+        `Previously taken course ${courseIndex} has a duplicate id`,
+      );
+    }
+    previousCourseIds.add(course.id);
+    assertString(course.name, `Previously taken course ${courseIndex} name`);
+    assertString(course.grade, `Previously taken course ${courseIndex} grade`);
+    if (
+      course.name.trim() === "" ||
+      !isFiniteNumber(course.credits) ||
+      course.credits < 0 ||
+      (course.gradePoints !== undefined &&
+        (!isFiniteNumber(course.gradePoints) || course.gradePoints < 0))
+    ) {
+      throw new Error(
+        `Previously taken course ${courseIndex} has invalid details`,
+      );
     }
   }
 

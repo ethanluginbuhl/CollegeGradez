@@ -92,3 +92,29 @@ test("rejects unordered grading policy bands and negative credits", () => {
   negativeCredits.courses[0].credits = -1;
   assert.throws(() => validateData(negativeCredits), /invalid credits/);
 });
+
+test("accepts previously taken courses and the current-course GPA setting", () => {
+  const data = validData();
+  data.includeCurrentCourses = false;
+  data.previousCourses = [
+    { id: "past-1", name: "History", credits: 3, grade: "A-" },
+  ];
+
+  assert.deepEqual(validateData(data), data);
+});
+
+test("accepts existing data without previously taken course fields", () => {
+  assert.deepEqual(validateData(validData()), validData());
+});
+
+test("rejects invalid previously taken course details and GPA settings", () => {
+  const invalidCourse = validData();
+  invalidCourse.previousCourses = [
+    { id: "past-1", name: "History", credits: -1, grade: "A" },
+  ];
+  assert.throws(() => validateData(invalidCourse), /invalid details/);
+
+  const invalidSetting = validData();
+  invalidSetting.includeCurrentCourses = "false";
+  assert.throws(() => validateData(invalidSetting), /must be a boolean/);
+});
