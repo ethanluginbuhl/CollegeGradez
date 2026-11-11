@@ -61,17 +61,19 @@ async function findUpdate(currentVersion, releases, latestStable) {
   return { update, requests };
 }
 
-test("beta installations discover the stable release", async () => {
-  const { update, requests } = await findUpdate(
-    "0.3.0-beta.1",
-    ["1.0.0", "0.3.0-beta.1"],
-    "1.0.0",
-  );
-  assert.equal(update.version, "1.0.0");
-  assert.ok(
-    requests.includes("/owner/repo/releases/download/v1.0.0/latest.yml"),
-  );
-});
+for (const currentVersion of ["0.3.0-alpha.1", "0.3.0-beta.1"]) {
+  test(`${currentVersion} installations discover the stable release`, async () => {
+    const { update, requests } = await findUpdate(
+      currentVersion,
+      ["1.0.0", currentVersion],
+      "1.0.0",
+    );
+    assert.equal(update.version, "1.0.0");
+    assert.ok(
+      requests.includes("/owner/repo/releases/download/v1.0.0/latest.yml"),
+    );
+  });
+}
 
 test("beta installations discover newer betas using latest metadata", async () => {
   const { update, requests } = await findUpdate(

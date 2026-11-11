@@ -39,6 +39,10 @@ jobs:
           if ($version -notmatch '^[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$') {
             throw "Version '$version' is not a valid npm semver without a leading v."
           }
+          node scripts\check-release-channel.js $version
+          if ($LASTEXITCODE -ne 0) {
+            throw "Release version '$version' uses an unsupported prerelease channel."
+          }
           npm version $version --no-git-tag-version --allow-same-version
 
       - name: Generate release notes draft

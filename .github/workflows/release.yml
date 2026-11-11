@@ -32,9 +32,14 @@ jobs:
       - name: Verify tag matches package version
         shell: pwsh
         run: |
-          $expected = "v$((Get-Content package.json | ConvertFrom-Json).version)"
+          $version = (Get-Content package.json | ConvertFrom-Json).version
+          $expected = "v$version"
           if ("${{ github.ref_name }}" -ne $expected) {
             throw "Tag ${{ github.ref_name }} does not match package version $expected."
+          }
+          node scripts\check-release-channel.js $version
+          if ($LASTEXITCODE -ne 0) {
+            throw "Release version '$version' uses an unsupported prerelease channel."
           }
       - name: Build release artifacts
         run: npm run dist -- --publish never

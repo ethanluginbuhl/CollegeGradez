@@ -165,6 +165,12 @@ above, builds an unpacked application, and opens a pull request. If the
 version and release notes are already prepared, review those changes instead
 of running the preparation workflow again.
 
+Prerelease versions must use `alpha` or `beta` as the first prerelease
+identifier, such as `1.1.0-alpha.1` or `1.1.0-beta.1`. Other channels,
+including `rc`, are rejected because their installations may not automatically
+update to the stable release. The restriction also applies when publishing a
+tag directly.
+
 Review the notes and merge the preparation changes, then test the installer on
 a clean Windows machine. Verify fresh installation, saving and restoring data,
 and upgrading from an existing version with a copy of representative data.
