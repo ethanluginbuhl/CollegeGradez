@@ -37,6 +37,10 @@ Keep grade and GPA calculations in `calc.js`, saved-data validation in
 `preload.js`, and browser UI behavior in `renderer.js`. Preserve compatibility
 with existing saved and exported JSON data.
 
+The project website lives in `docs` as plain HTML and CSS and is published by
+GitHub Pages. Keep it in sync with the README when changing user-visible
+features, download instructions, or the version label.
+
 ## Pull requests
 
 Keep pull requests focused and explain any changes to persisted data,
