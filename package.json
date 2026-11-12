@@ -26,6 +26,7 @@
     },
     "files": [
       "assets/**/*",
+      "array-order.js",
       "calc.js",
       "data-schema.js",
       "index.html",

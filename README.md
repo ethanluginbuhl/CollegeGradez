@@ -39,6 +39,8 @@ security issues.
 ## What it does today
 
 - Track multiple courses, categories, and assignments.
+- Reorder courses, previously taken courses, categories, and assignments with
+  up and down controls.
 - Calculate grades using weighted categories or total points.
 - Drop the lowest scored assignments within a category.
 - Show live course grade summaries and overall GPA.
