@@ -19,10 +19,13 @@ function validatePolicy(policy, label) {
     throw new Error(`${label} must contain grading bands`);
   }
   let previousThreshold = Infinity;
+  const letters = new Set();
   for (const [index, band] of policy.bands.entries()) {
     assertString(band.letter, `${label} band ${index} letter`);
+    const normalizedLetter = band.letter.trim().toLowerCase();
     if (
-      band.letter.trim() === "" ||
+      normalizedLetter === "" ||
+      letters.has(normalizedLetter) ||
       !isFiniteNumber(band.minPercent) ||
       band.minPercent < 0 ||
       band.minPercent > 100 ||
@@ -32,6 +35,7 @@ function validatePolicy(policy, label) {
     ) {
       throw new Error(`${label} has an invalid band`);
     }
+    letters.add(normalizedLetter);
     previousThreshold = band.minPercent;
   }
   if (previousThreshold !== 0) {

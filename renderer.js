@@ -365,9 +365,12 @@ function renderPolicyEditor(
   }
   function validPolicy() {
     let previous = Infinity;
+    const letters = new Set();
     for (const band of policy.bands) {
+      const normalizedLetter = band.letter.trim().toLowerCase();
       if (
-        !band.letter ||
+        !normalizedLetter ||
+        letters.has(normalizedLetter) ||
         !Number.isFinite(band.minPercent) ||
         band.minPercent < 0 ||
         band.minPercent > 100 ||
@@ -377,6 +380,7 @@ function renderPolicyEditor(
       ) {
         return false;
       }
+      letters.add(normalizedLetter);
       previous = band.minPercent;
     }
     return policy.bands.length > 0 && previous === 0;
@@ -437,7 +441,7 @@ function renderPolicyEditor(
         }
         if (!validPolicy()) {
           showPolicyError(
-            "Use descending minimum percentages ending with a 0% grade, and enter non-negative points.",
+            "Use unique grade labels, descending minimum percentages ending with a 0% grade, and non-negative points.",
           );
           return;
         }

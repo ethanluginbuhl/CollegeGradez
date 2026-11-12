@@ -77,6 +77,27 @@ test("accepts custom default and course grading policies", () => {
   assert.deepEqual(validateData(data), data);
 });
 
+test("rejects duplicate grade labels in default and course policies", () => {
+  const defaultPolicy = validData();
+  defaultPolicy.gradingPolicy = {
+    bands: [
+      { letter: "A", minPercent: 90, points: 4 },
+      { letter: " a ", minPercent: 80, points: 3 },
+      { letter: "F", minPercent: 0, points: 0 },
+    ],
+  };
+  assert.throws(() => validateData(defaultPolicy), /invalid band/);
+
+  const coursePolicy = validData();
+  coursePolicy.courses[0].gradingPolicy = {
+    bands: [
+      { letter: "Pass", minPercent: 60, points: 4 },
+      { letter: "Pass", minPercent: 0, points: 0 },
+    ],
+  };
+  assert.throws(() => validateData(coursePolicy), /invalid band/);
+});
+
 test("rejects unordered grading policy bands and negative credits", () => {
   const unordered = validData();
   unordered.gradingPolicy = {
