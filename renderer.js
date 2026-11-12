@@ -1,3 +1,5 @@
+const { swapItems } = window.ArrayOrder;
+
 const homeView = document.getElementById("view-home");
 const courseView = document.getElementById("view-course");
 const courseList = document.getElementById("course-list");
@@ -133,6 +135,49 @@ async function undoDelete() {
   } catch {
     renderHome();
   }
+}
+
+function createOrderControls(itemType, itemId, index, count, onMove) {
+  const controls = document.createElement("div");
+  controls.className = "order-actions";
+  for (const [direction, offset] of [
+    ["up", -1],
+    ["down", 1],
+  ]) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = `ghost icon order-${direction}`;
+    button.disabled = index + offset < 0 || index + offset >= count;
+    button.setAttribute("aria-label", `Move ${itemType} ${direction}`);
+    button.title = `Move ${direction}`;
+    button.dataset.orderId = itemId;
+    const path =
+      direction === "up" ? "M12 19V5m-6 6 6-6 6 6" : "M12 5v14m6-6-6 6-6-6";
+    button.innerHTML = `<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="${path}"></path></svg>`;
+    button.addEventListener("click", () => onMove(offset, direction));
+    controls.appendChild(button);
+  }
+  return controls;
+}
+
+async function reorderItems(
+  items,
+  firstIndex,
+  secondIndex,
+  render,
+  container,
+  itemId,
+  controlClass,
+) {
+  if (!swapItems(items, firstIndex, secondIndex)) {
+    return;
+  }
+  await persist();
+  render();
+  const focusTarget = Array.from(
+    container.querySelectorAll(`.${controlClass}`),
+  ).find((button) => button.dataset.orderId === itemId);
+  focusTarget?.focus();
 }
 
 function closeDialog(result) {
@@ -554,18 +599,38 @@ function renderPreviousCourses() {
   transferCompletedCoursesButton.disabled =
     eligibleCurrentCourses().length === 0;
 
-  for (const course of previousCourses) {
+  for (const [index, course] of previousCourses.entries()) {
     const row = document.createElement("tr");
     row.innerHTML = `
       <td><input class="previous-course-name" type="text" maxlength="120" aria-label="Course name"></td>
       <td><input class="previous-course-credits" type="number" min="0" step="0.5" aria-label="Course credits"></td>
       <td><select class="previous-course-grade" aria-label="Final grade"></select></td>
-      <td><button type="button" class="danger previous-course-remove">Remove</button></td>
+      <td><div class="previous-course-row-actions"><div class="previous-course-order"></div><button type="button" class="danger previous-course-remove">Remove</button></div></td>
     `;
     const nameInput = row.querySelector(".previous-course-name");
     const creditsInput = row.querySelector(".previous-course-credits");
     const gradeSelect = row.querySelector(".previous-course-grade");
     const removeButton = row.querySelector(".previous-course-remove");
+    row
+      .querySelector(".previous-course-order")
+      .replaceWith(
+        createOrderControls(
+          `${course.name || "course"} from previously taken courses`,
+          course.id,
+          index,
+          previousCourses.length,
+          (offset, direction) =>
+            reorderItems(
+              data.previousCourses,
+              index,
+              index + offset,
+              renderHome,
+              body,
+              course.id,
+              `order-${direction}`,
+            ),
+        ),
+      );
     nameInput.value = course.name;
     creditsInput.value = course.credits;
     removeButton.setAttribute(
@@ -642,7 +707,7 @@ function renderHome() {
     renderPreviousCourses();
   });
 
-  for (const course of data.courses) {
+  for (const [index, course] of data.courses.entries()) {
     const grade = Calc.courseGrade(course);
     const gpa = Calc.courseGpa(course, data.gradingPolicy);
     const item = document.createElement("li");
@@ -692,6 +757,26 @@ function renderHome() {
       renderHome();
       showUndoNotice(course.name || "Course", previousData);
     });
+    item
+      .querySelector(".course-actions")
+      .prepend(
+        createOrderControls(
+          `${course.name || "course"} course`,
+          course.id,
+          index,
+          data.courses.length,
+          (offset, direction) =>
+            reorderItems(
+              data.courses,
+              index,
+              index + offset,
+              renderHome,
+              courseList,
+              course.id,
+              `order-${direction}`,
+            ),
+        ),
+      );
     courseList.appendChild(item);
   }
 }
@@ -717,13 +802,13 @@ function renderCourse() {
 
   categoriesEmpty.classList.toggle("hidden", course.categories.length > 0);
   categoryRows.innerHTML = "";
-  for (const category of course.categories) {
+  for (const [index, category] of course.categories.entries()) {
     const row = document.createElement("tr");
     row.innerHTML = `
       <td data-label="Name"><input type="text" class="cat-name" maxlength="80" aria-label="Category name" /></td>
       <td data-label="Weight %" class="weight-col"><input type="number" class="cat-weight" min="0" step="1" aria-label="Category weight percentage" /></td>
       <td data-label="Drop Lowest"><input type="number" class="cat-drop" min="0" step="1" aria-label="Assignments to drop" /></td>
-      <td data-label=""><button type="button" class="danger icon" aria-label="Remove category">Remove</button></td>
+      <td data-label="Actions"><div class="row-actions"><div class="category-order"></div><button type="button" class="danger icon remove-category" aria-label="Remove category">Remove</button></div></td>
     `;
     const nameInput = row.querySelector(".cat-name");
     const weightInput = row.querySelector(".cat-weight");
@@ -749,24 +834,46 @@ function renderCourse() {
       await persist();
       renderGradeSummary(course);
     });
-    row.querySelector("button").addEventListener("click", async () => {
-      const ok = await askConfirm(
-        `Remove category “${category.name}”? Assignments in it will be unassigned.`,
-      );
-      if (!ok) {
-        return;
-      }
-      course.categories = course.categories.filter(
-        (item) => item.id !== category.id,
-      );
-      for (const assignment of course.assignments) {
-        if (assignment.categoryId === category.id) {
-          assignment.categoryId = null;
+    row
+      .querySelector(".remove-category")
+      .addEventListener("click", async () => {
+        const ok = await askConfirm(
+          `Remove category “${category.name}”? Assignments in it will be unassigned.`,
+        );
+        if (!ok) {
+          return;
         }
-      }
-      await persist();
-      renderCourse();
-    });
+        course.categories = course.categories.filter(
+          (item) => item.id !== category.id,
+        );
+        for (const assignment of course.assignments) {
+          if (assignment.categoryId === category.id) {
+            assignment.categoryId = null;
+          }
+        }
+        await persist();
+        renderCourse();
+      });
+    row
+      .querySelector(".category-order")
+      .replaceWith(
+        createOrderControls(
+          `${category.name || "category"} category`,
+          category.id,
+          index,
+          course.categories.length,
+          (offset, direction) =>
+            reorderItems(
+              course.categories,
+              index,
+              index + offset,
+              renderCourse,
+              categoryRows,
+              category.id,
+              `order-${direction}`,
+            ),
+        ),
+      );
     categoryRows.appendChild(row);
   }
 
@@ -776,13 +883,13 @@ function renderCourse() {
   );
   assignmentGroups.innerHTML = "";
 
-  function renderAssignmentRow(assignment, tableBody) {
+  function renderAssignmentRow(assignment, tableBody, assignments, index) {
     const row = document.createElement("tr");
     row.innerHTML = `
       <td data-label="Name"><input type="text" class="asg-name" maxlength="120" aria-label="Assignment name" /></td>
       <td data-label="Earned"><input type="number" class="asg-earned" min="0" step="0.5" aria-label="Points earned" /></td>
       <td data-label="Possible"><input type="number" class="asg-possible" min="0" step="0.5" aria-label="Possible points" /></td>
-      <td data-label=""><button type="button" class="danger icon" aria-label="Remove assignment">Remove</button></td>
+      <td data-label="Actions"><div class="row-actions"><div class="assignment-order"></div><button type="button" class="danger icon remove-assignment" aria-label="Remove assignment">Remove</button></div></td>
     `;
     const nameInput = row.querySelector(".asg-name");
     const earnedInput = row.querySelector(".asg-earned");
@@ -806,13 +913,35 @@ function renderCourse() {
       await persist();
       renderGradeSummary(course);
     });
-    row.querySelector("button").addEventListener("click", async () => {
-      course.assignments = course.assignments.filter(
-        (item) => item.id !== assignment.id,
+    row
+      .querySelector(".remove-assignment")
+      .addEventListener("click", async () => {
+        course.assignments = course.assignments.filter(
+          (item) => item.id !== assignment.id,
+        );
+        await persist();
+        renderCourse();
+      });
+    row
+      .querySelector(".assignment-order")
+      .replaceWith(
+        createOrderControls(
+          `${assignment.name || "assignment"} assignment`,
+          assignment.id,
+          index,
+          assignments.length,
+          (offset, direction) =>
+            reorderItems(
+              course.assignments,
+              course.assignments.indexOf(assignment),
+              course.assignments.indexOf(assignments[index + offset]),
+              renderCourse,
+              assignmentGroups,
+              assignment.id,
+              `order-${direction}`,
+            ),
+        ),
       );
-      await persist();
-      renderCourse();
-    });
     tableBody.appendChild(row);
   }
 
@@ -853,13 +982,13 @@ function renderCourse() {
             <th>Name</th>
             <th>Earned</th>
             <th>Possible</th>
-            <th></th>
+            <th>Actions</th>
           </tr>
         </thead>
       `;
       const body = document.createElement("tbody");
-      for (const assignment of assignments) {
-        renderAssignmentRow(assignment, body);
+      for (const [index, assignment] of assignments.entries()) {
+        renderAssignmentRow(assignment, body, assignments, index);
       }
       table.appendChild(body);
       group.appendChild(table);

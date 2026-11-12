@@ -5,6 +5,7 @@ const packageMetadata = require("../package.json");
 test("includes all runtime files in the packaged application", () => {
   const packagedFiles = new Set(packageMetadata.build.files);
   const requiredFiles = [
+    "array-order.js",
     "calc.js",
     "data-schema.js",
     "index.html",
