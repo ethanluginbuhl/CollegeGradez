@@ -348,7 +348,7 @@ function renderPolicyEditor(
   const editorOptions = { showPoints, pointsPolicy };
   container.innerHTML = `
     <p class="panel-help policy-help">
-      Add bands from highest to lowest minimum percentage. The last band must
+      Bands will auto sort from highest to lowest minimum percentage. The last band must
       start at 0% so every grade has a result.
     </p>
     <table class="data-table policy-table">
