@@ -15,6 +15,7 @@ class Element {
     this.listeners = new Map();
     this.value = "";
     this.textContent = "";
+    this.innerHTML = "";
   }
 
   addEventListener(type, listener) {
@@ -100,6 +101,53 @@ const renderPolicyEditor = vm.runInNewContext(
    renderPolicyEditor;`,
   { Calc, document: { createElement: () => new Row() } },
 );
+
+test("refreshes the course GPA letter and grade summary after a score change", () => {
+  const first = source.indexOf("function updateCourseCalculations(");
+  const last = source.indexOf("function renderCourseGpa(", first);
+  assert.ok(first !== -1 && last !== -1);
+
+  const gpaValue = new Element(["gpa-value"]);
+  const help = new Element(["panel-help"]);
+  const card = {
+    querySelector(selector) {
+      return {
+        ".gpa-value": gpaValue,
+        ".panel-help": help,
+      }[selector];
+    },
+  };
+  let gradeSummaryRefreshes = 0;
+  const updateCourseCalculations = vm.runInNewContext(
+    `${source.slice(first, last)}
+     updateCourseCalculations;`,
+    {
+      Calc,
+      data: { gradingPolicy: Calc.DEFAULT_GRADING_POLICY },
+      courseGpaCard: card,
+      escapeHtml: (text) => text,
+      formatGpa: (value) => (value === null ? "—" : value.toFixed(2)),
+      renderGradeSummary: () => {
+        gradeSummaryRefreshes += 1;
+      },
+    },
+  );
+  const course = {
+    gradingMode: "points",
+    credits: 3,
+    categories: [{ id: "all", weight: 100, dropLowest: 0 }],
+    assignments: [{ categoryId: "all", earned: 80, possible: 100 }],
+  };
+
+  updateCourseCalculations(course);
+  assert.equal(gradeSummaryRefreshes, 1);
+  assert.equal(gpaValue.innerHTML, "B- <span>2.70</span>");
+  assert.match(help.textContent, /Included in overall GPA/);
+
+  course.assignments[0].earned = 95;
+  updateCourseCalculations(course);
+  assert.equal(gpaValue.innerHTML, "A <span>4.00</span>");
+});
 
 for (const showPoints of [true, false]) {
   test(`removes the selected reordered band in the ${showPoints ? "default" : "course"} policy editor`, async () => {
