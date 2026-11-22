@@ -339,6 +339,21 @@ function renderGradeSummary(course) {
   `;
 }
 
+function updateCourseCalculations(course) {
+  renderGradeSummary(course);
+  const result = Calc.courseGpa(course, data.gradingPolicy);
+  const gpaValue = courseGpaCard.querySelector(".gpa-value");
+  if (gpaValue) {
+    gpaValue.innerHTML = `${escapeHtml(result.letter || "—")} <span>${formatGpa(result.points)}</span>`;
+  }
+  const help = courseGpaCard.querySelector(".panel-help");
+  if (help) {
+    help.textContent = result.eligible
+      ? "Included in overall GPA."
+      : "Complete the course grade and enter positive credits to include it.";
+  }
+}
+
 function renderPolicyEditor(
   container,
   policy,
@@ -828,20 +843,20 @@ function renderCourse() {
     nameInput.addEventListener("change", async () => {
       category.name = nameInput.value.trim() || "Untitled";
       await persist();
-      renderGradeSummary(course);
+      updateCourseCalculations(course);
     });
     weightInput.addEventListener("change", async () => {
       const value = Number(weightInput.value);
       category.weight = Number.isFinite(value) ? value : 0;
       await persist();
-      renderGradeSummary(course);
+      updateCourseCalculations(course);
     });
     dropInput.addEventListener("change", async () => {
       const value = Math.max(0, Math.floor(Number(dropInput.value) || 0));
       category.dropLowest = value;
       dropInput.value = value;
       await persist();
-      renderGradeSummary(course);
+      updateCourseCalculations(course);
     });
     row
       .querySelector(".remove-category")
@@ -910,17 +925,17 @@ function renderCourse() {
     nameInput.addEventListener("change", async () => {
       assignment.name = nameInput.value.trim() || "Untitled";
       await persist();
-      renderGradeSummary(course);
+      updateCourseCalculations(course);
     });
     earnedInput.addEventListener("change", async () => {
       assignment.earned = parseOptionalNumber(earnedInput.value);
       await persist();
-      renderGradeSummary(course);
+      updateCourseCalculations(course);
     });
     possibleInput.addEventListener("change", async () => {
       assignment.possible = parseOptionalNumber(possibleInput.value);
       await persist();
-      renderGradeSummary(course);
+      updateCourseCalculations(course);
     });
     row
       .querySelector(".remove-assignment")
