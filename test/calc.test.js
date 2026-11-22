@@ -7,6 +7,7 @@ const {
   dropLowest,
   letterGrade,
   reorderPolicyBands,
+  removePolicyBand,
 } = require("../calc.js");
 
 test("calculates weighted grades using scored categories", () => {
@@ -182,6 +183,28 @@ test("rejects duplicate or invalid policy thresholds when reordering", () => {
       ],
     }),
     null,
+  );
+});
+
+test("removes a policy band by identity after the bands are reordered", () => {
+  const policy = {
+    bands: [
+      { letter: "A", minPercent: 90, points: 4 },
+      { letter: "F", minPercent: 0, points: 0 },
+      { letter: "New", minPercent: 95, points: 0 },
+      { letter: "B", minPercent: 80, points: 3 },
+    ],
+  };
+  const newBand = policy.bands[2];
+
+  const reordered = reorderPolicyBands(policy);
+  policy.bands.splice(0, policy.bands.length, ...reordered);
+  const removedIndex = removePolicyBand(policy, newBand);
+
+  assert.equal(removedIndex, 0);
+  assert.deepEqual(
+    policy.bands.map((band) => band.letter),
+    ["A", "B", "F"],
   );
 });
 

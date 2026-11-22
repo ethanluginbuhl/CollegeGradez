@@ -398,7 +398,7 @@ function renderPolicyEditor(
   }
   const body = container.querySelector("tbody");
   const rowsByBand = new Map();
-  for (const [index, band] of policy.bands.entries()) {
+  for (const band of policy.bands) {
     const row = document.createElement("tr");
     row.innerHTML = `
       <td><input type="text" class="policy-letter" maxlength="12" aria-label="Grade letter"></td>
@@ -459,9 +459,12 @@ function renderPolicyEditor(
         if (policy.bands.length <= 1) {
           return;
         }
-        policy.bands.splice(index, 1);
+        const removedIndex = Calc.removePolicyBand(policy, band);
+        if (removedIndex === null) {
+          return;
+        }
         if (!validPolicy()) {
-          policy.bands.splice(index, 0, band);
+          policy.bands.splice(removedIndex, 0, band);
           showPolicyError(
             "At least one grade must remain, and the minimum percentages must end at 0%.",
           );
@@ -471,7 +474,9 @@ function renderPolicyEditor(
           await onChange();
           renderPolicyEditor(container, policy, onChange, editorOptions);
           const nextBand =
-            policy.bands[index] || policy.bands[index - 1] || null;
+            policy.bands[removedIndex] ||
+            policy.bands[removedIndex - 1] ||
+            null;
           if (nextBand) {
             const nextIndex = policy.bands.indexOf(nextBand);
             const nextRow = container.querySelectorAll("tbody tr")[nextIndex];
