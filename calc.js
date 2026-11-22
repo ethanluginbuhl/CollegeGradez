@@ -175,6 +175,23 @@
     return reordered;
   }
 
+  function removePolicyBand(policy, band) {
+    if (
+      !policy ||
+      !Array.isArray(policy.bands) ||
+      !band ||
+      policy.bands.length <= 1
+    ) {
+      return null;
+    }
+    const index = policy.bands.indexOf(band);
+    if (index === -1) {
+      return null;
+    }
+    policy.bands.splice(index, 1);
+    return index;
+  }
+
   function courseGpa(course, defaultPolicy) {
     const grade = courseGrade(course);
     const band = letterGrade(
@@ -275,6 +292,7 @@
     courseGrade,
     letterGrade,
     reorderPolicyBands,
+    removePolicyBand,
     courseGpa,
     previousCourseGpa,
     calculateGpa,
