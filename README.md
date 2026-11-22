@@ -159,36 +159,36 @@ npm run dist:dir
 ```
 
 Releases are published automatically by GitHub Actions when a version tag is
-pushed. To prepare a release, run **Actions > Prepare Release** and enter the
-version without the leading `v` (for example, `1.0.0` or `1.1.0-beta.1`). The
-workflow updates `package.json` and `package-lock.json`, generates a
-release-notes draft at `.github/release-notes/v<version>.md`, runs the checks
-above, builds an unpacked application, and opens a pull request. If the
-version and release notes are already prepared, review those changes instead
-of running the preparation workflow again.
+pushed. To prepare a release:
 
-Prerelease versions must use `alpha` or `beta` as the first prerelease
-identifier, such as `1.1.0-alpha.1` or `1.1.0-beta.1`. Other channels,
-including `rc`, are rejected because their installations may not automatically
-update to the stable release. The restriction also applies when publishing a
-tag directly.
-
-Review the notes and merge the preparation changes, then test the installer on
-a clean Windows machine. Verify fresh installation, saving and restoring data,
-and upgrading from an existing version with a copy of representative data.
-Create and push a tag matching the version on the merged commit:
+1. Run **Actions > Prepare Release** and enter the
+   version without the leading `v` (for example, `1.0.0` or `1.1.0-beta.1`). The
+   workflow updates `package.json` and `package-lock.json`, generates a
+   release-notes draft at `.github/release-notes/v<version>.md`, runs the checks
+   above, builds an unpacked application, and opens a pull request. If the
+   version and release notes are already prepared, review those changes instead
+   of running the preparation workflow again.
+2. Prerelease versions must use `alpha` or `beta` as the first prerelease
+   identifier, such as `1.1.0-alpha.1` or `1.1.0-beta.1`. Other channels,
+   including `rc`, are rejected because their installations may not automatically
+   update to the stable release. The restriction also applies when publishing a
+   tag directly.
+3. Review the notes and merge the preparation changes, then test the installer on
+   a clean Windows machine. Verify fresh installation, saving and restoring data,
+   and upgrading from an existing version with a copy of representative data.
+4. Create and push a tag matching the version on the merged commit:
 
 ```sh
 git tag v1.0.0
 git push origin v1.0.0
 ```
 
-The tag-triggered release workflow verifies that the tag matches the version
-in `package.json`, then publishes the installer, blockmap, and `latest.yml` to
-GitHub. Versions with a prerelease suffix are marked as prereleases; versions
-without one are full releases. The preparation workflow does not create tags
-or publish releases. Check the published release and test the update path from
-an installed earlier version, including from beta to stable when applicable.
+5. The tag-triggered release workflow verifies that the tag matches the version
+   in `package.json`, then publishes the installer, blockmap, and `latest.yml` to
+   GitHub. Versions with a prerelease suffix are marked as prereleases; versions
+   without one are full releases. The preparation workflow does not create tags
+   or publish releases. Check the published release and test the update path from
+   an installed earlier version, including from beta to stable when applicable.
 
 Installers and update packages are currently unsigned, so Windows SmartScreen
 may display a warning.
